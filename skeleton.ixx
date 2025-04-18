@@ -100,7 +100,7 @@ void write_sector(std::fstream &fs, std::vector<uint8_t> &data, bool iso)
 }
 
 
-void write_exo(std::fstream &fs, std::vector<uint8_t> &data, , uint32_t sector_num, TrackType track_type)
+void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num, TrackType track_type)
 {
     auto sector = (Sector *)data.data();
 
@@ -116,6 +116,9 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, , uint32_t sector_n
         fs.put(0x01);
         fs.write((char *)&sector->sync, sizeof(sector->sync));
     }
+
+    uint8_t msf[] = { 0x00, 0x02, 0x00 };
+    if(memcmp(sector->header.address, msf, sizeof(msf)))
 
     if(sector->header.mode == 1)
     {
@@ -231,7 +234,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         if(!exo_fs.is_open())
             throw_line("unable to create file ({})", exo_path.filename().string());
 
-        exo_fs.write((char *)EXO_MAGIC.data(), sizeof(EXO_MAGIC));
+        exo_fs.write((char *)EXO_MAGIC, sizeof(EXO_MAGIC));
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
         exo_fs.write((char *)(&EXO_VER), sizeof(EXO_VER));
