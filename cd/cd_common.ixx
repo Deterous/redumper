@@ -633,7 +633,7 @@ export std::list<std::pair<std::string, CueMode>> cue_get_entries(const std::fil
                 else if(tokens[2] == "MODE2/2324")
                     entry.second = CueMode::MODE2_2324;
                 else
-                    entry.second = CueMode.UNKNOWN;
+                    entry.second = CueMode::UNKNOWN;
                 entries.push_back(entry);
                 entry.first.clear();
             }
