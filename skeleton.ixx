@@ -113,7 +113,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, , uint32_t sector_n
             bad_sector = true;
             fs.write((char *)&sector_num, sizeof(sector_num));
         }
-        fs.put(0x01)
+        fs.put(0x01);
         fs.write((char *)&sector->sync, sizeof(sector->sync));
     }
 
