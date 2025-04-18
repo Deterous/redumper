@@ -144,21 +144,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
     }
 
     if(sector->header.mode == 1)
-    {
-        uint32_t edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
-        if(sector->mode1.edc != edc)
-        {
-            if(!bad_sector)
-            {
-                bad_sector = true;
-                fs.write((char *)&lba, sizeof(lba));
-            }
-            fs.put(0x04);
-            fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
-            LOG("edc: 0x{:08X} (expected 0x{:08X})", edc, sector->mode1.edc);
-        }
-
-        if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
+    {        if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
         {
             if(!bad_sector)
             {
@@ -181,13 +167,27 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
             fs.write((char *)sector->mode1.ecc.p_parity, sizeof(sector->mode1.ecc.p_parity));
             fs.write((char *)sector->mode1.ecc.q_parity, sizeof(sector->mode1.ecc.q_parity));
         }
+        
+        uint32_t edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
+        if(sector->mode1.edc != edc)
+        {
+            if(!bad_sector)
+            {
+                bad_sector = true;
+                fs.write((char *)&lba, sizeof(lba));
+            }
+            fs.put(0x04);
+            fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
+            LOG("edc: 0x{:08X} (expected 0x{:08X})", edc, sector->mode1.edc);
+        }
     }
     else if(sector->header.mode == 2)
     {
         // todo: calculate subheader
+        // if(memcmp(&sector.mode2.xa.sub_header, &sector.mode2.xa.sub_header_copy, sizeof(sector.mode2.xa.sub_header)))
         if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
         {
-            auto edc = EDC().update((uint8_t *)&sector->mode2.xa.sub_header, offsetof(Sector, mode2.xa.form2.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
+            uint32_t edc = EDC().update((uint8_t *)&sector->mode2.xa.sub_header, offsetof(Sector, mode2.xa.form2.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
             if(sector->mode2.xa.form2.edc != edc)
             {
                 if(!bad_sector)
@@ -201,7 +201,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
         }
         else
         {
-            auto edc = EDC().update((uint8_t *)&sector->mode2.xa.sub_header, offsetof(Sector, mode2.xa.form1.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
+            uint32_t edc = EDC().update((uint8_t *)&sector->mode2.xa.sub_header, offsetof(Sector, mode2.xa.form1.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
             if(sector->mode2.xa.form1.edc != edc)
             {
                 if(!bad_sector)
@@ -237,7 +237,10 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
     std::filesystem::path exo_path(image_prefix + ".exo");
 
     if(!options.overwrite && (std::filesystem::exists(skeleton_path) || std::filesystem::exists(hash_path) || std::filesystem::exists(exo_path)))
-        throw_line("skeleton/hash/exo file already exists");
+        throw_line("skeleton/hash file already exists");
+
+    if(!iso && std::filesystem::exists(exo_path)))
+        throw_line("exo file already exists");
 
     std::unique_ptr<SectorReader> sector_reader;
     if(iso)
