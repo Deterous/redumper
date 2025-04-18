@@ -296,9 +296,16 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
             throw_line("unable to create file ({})", exo_path.filename().string());
 
         exo_fs.write((char *)EXO_MAGIC, sizeof(EXO_MAGIC));
+        if(exo_fs.fail())
+            throw_line("write failed ({})", exo_path.filename().string());
         exo_fs.write((char *)(&EXO_VER), sizeof(EXO_VER));
+        if(exo_fs.fail())
+            throw_line("write failed ({})", exo_path.filename().string());
         exo_fs.write((char *)(&sectors_count), sizeof(sectors_count));
-        exo_fs.write((char *)((uint32_t)track_type), sizeof((uint32_t)track_type));
+        if(exo_fs.fail())
+            throw_line("write failed ({})", exo_path.filename().string());
+        uint32_t track_type_full = (uint32_t)track_type;
+        exo_fs.write((char *)track_type_full, sizeof(track_type_full));
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
     }
