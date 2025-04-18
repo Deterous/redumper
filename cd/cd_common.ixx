@@ -610,7 +610,7 @@ export std::list<std::pair<std::string, CueMode>> cue_get_entries(const std::fil
                 entry.first = tokens[1];
             else if(tokens[0] == "TRACK" && !entry.first.empty())
             {
-                if(tokens[2] == "AUDIO") {
+                if(tokens[2] == "AUDIO")
                     entry.second = CueMode.AUDIO;
                 else if(tokens[2] == "MODE1/2352")
                     entry.second = CueMode.MODE1_2352;

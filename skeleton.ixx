@@ -220,7 +220,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
             throw_line("write failed ({})", exo_path.filename().string());
         exo_fs.write((char *)(&cue_mode), sizeof(cue_mode));
         if(exo_fs.fail())
-            throw_line("write failed ({})", exo_path.filename().string());  
+            throw_line("write failed ({})", exo_path.filename().string());
     }
     for(uint32_t s = 0; s < sectors_count; ++s)
     {
@@ -236,12 +236,12 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         write_sector(skeleton_fs, (char *)sector.data(), iso);
         if(skeleton_fs.fail())
             throw_line("write failed ({})", skeleton_path.filename().string());
-        
+
         if(!iso)
         {
             write_exo(exo_fs, (char *)sector.data());
             if(exo_fs.fail())
-                throw_line("write failed ({})", exo_path.filename().string());      
+                throw_line("write failed ({})", exo_path.filename().string());
         }
     }
     progress_output(iso ? "creating skeleton" : "creating exo/skeleton", sectors_count, sectors_count);
