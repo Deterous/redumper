@@ -591,15 +591,15 @@ export std::string track_extract_basename(std::string str)
 }
 
 
-export std::list<std::pair<std::string, CueMode>> cue_get_entries(const std::filesystem::path &cue_path)
+export std::list<std::pair<std::string, TrackType>> cue_get_entries(const std::filesystem::path &cue_path)
 {
-    std::list<std::pair<std::string, CueMode>> entries;
+    std::list<std::pair<std::string, TrackType>> entries;
 
     std::fstream fs(cue_path, std::fstream::in);
     if(!fs.is_open())
         throw_line("unable to open file ({})", cue_path.filename().string());
 
-    std::pair<std::string, CueMode> entry;
+    std::pair<std::string, TrackType> entry;
     std::string line;
     while(std::getline(fs, line))
     {
@@ -611,29 +611,29 @@ export std::list<std::pair<std::string, CueMode>> cue_get_entries(const std::fil
             else if(tokens[0] == "TRACK" && !entry.first.empty())
             {
                 if(tokens[2] == "AUDIO")
-                    entry.second = CueMode::AUDIO;
+                    entry.second = TrackType::AUDIO;
                 else if(tokens[2] == "MODE1/2352")
-                    entry.second = CueMode::MODE1_2352;
+                    entry.second = TrackType::MODE1_2352;
                 else if(tokens[2] == "MODE2/2352")
-                    entry.second = CueMode::MODE2_2352;
+                    entry.second = TrackType::MODE2_2352;
                 else if(tokens[2] == "CDI/2352")
-                    entry.second = CueMode::CDI_2352;
+                    entry.second = TrackType::CDI_2352;
                 else if(tokens[2] == "MODE1/2048")
-                    entry.second = CueMode::MODE1_2048;
+                    entry.second = TrackType::MODE1_2048;
                 else if(tokens[2] == "MODE2/2336")
-                    entry.second = CueMode::MODE2_2336;
+                    entry.second = TrackType::MODE2_2336;
                 else if(tokens[2] == "CDI/2336")
-                    entry.second = CueMode::CDI_2336;
+                    entry.second = TrackType::CDI_2336;
                 else if(tokens[2] == "CDG")
-                    entry.second = CueMode::CDG;
+                    entry.second = TrackType::CDG;
                 else if(tokens[2] == "MODE0/2352")
-                    entry.second = CueMode::MODE0_2352;
+                    entry.second = TrackType::MODE0_2352;
                 else if(tokens[2] == "MODE2/2048")
-                    entry.second = CueMode::MODE2_2048;
+                    entry.second = TrackType::MODE2_2048;
                 else if(tokens[2] == "MODE2/2324")
-                    entry.second = CueMode::MODE2_2324;
+                    entry.second = TrackType::MODE2_2324;
                 else
-                    entry.second = CueMode::UNKNOWN;
+                    entry.second = TrackType::AUDIO;
                 entries.push_back(entry);
                 entry.first.clear();
             }
