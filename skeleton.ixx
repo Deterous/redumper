@@ -145,7 +145,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
 
     if(sector->header.mode == 1)
     {
-        auto edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
+        uint32_t edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
         if(sector->mode1.edc != edc)
         {
             if(!bad_sector)
@@ -157,6 +157,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
             fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
             LOG("edc: 0x{:08X} (expected 0x{:08X})", edc, sector->mode1.edc);
         }
+
         if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
         {
             if(!bad_sector)
@@ -167,7 +168,19 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
             fs.put(0x05);
             fs.write((char *)sector->mode1.intermediate, sizeof(sector->mode1.intermediate));
         }
-        // todo: calculate ECC
+        
+        Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
+        if(memcmp(ecc.p_parity, sector->mode1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector.mode1.ecc.q_parity, sizeof(ecc.q_parity)))
+        {
+            if(!bad_sector)
+            {
+                bad_sector = true;
+                fs.write((char *)&lba, sizeof(lba));
+            }
+            fs.put(0x06);
+            fs.write((char *)sector->mode1.ecc.p_parity);
+            fs.write((char *)sector->mode1.ecc.q_parity);
+        }
     }
     else if(sector->header.mode == 2)
     {
@@ -199,7 +212,19 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 fs.put(0x04);
                 fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(sector->mode2.xa.form1.edc));
             }
-            // todo: calculate ecc
+        
+            Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
+            if(memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector.mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
+            {
+                if(!bad_sector)
+                {
+                    bad_sector = true;
+                    fs.write((char *)&lba, sizeof(lba));
+                }
+                fs.put(0x06);
+                fs.write((char *)sector->mode2.xa.form1.ecc.p_parity);
+                fs.write((char *)sector->mode2.xa.form1.ecc.q_parity);
+            }
         }
     }
 }
