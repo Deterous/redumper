@@ -168,7 +168,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
             fs.put(0x05);
             fs.write((char *)sector->mode1.intermediate, sizeof(sector->mode1.intermediate));
         }
-        
+
         Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
         if(memcmp(ecc.p_parity, sector->mode1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector.mode1.ecc.q_parity, sizeof(ecc.q_parity)))
         {
@@ -212,7 +212,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 fs.put(0x04);
                 fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(sector->mode2.xa.form1.edc));
             }
-        
+
             Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
             if(memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector.mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
             {
