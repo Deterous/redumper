@@ -106,7 +106,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
 
     bool bad_sector = false;
 
-    if(memcmp(sector->sync, CD_DATA_SYNC, sizeof(CD_DATA_SYNC)))
+    if(std::memcmp(sector->sync, CD_DATA_SYNC, sizeof(CD_DATA_SYNC)))
     {
         if(!bad_sector)
         {
@@ -118,7 +118,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
     }
 
     MSF msf = LBA_to_MSF(sector_num);
-    if(memcmp(sector->header.address, msf, sizeof(msf)))
+    if(std::memcmp(sector->header.address, msf, sizeof(msf)))
     {
         if(!bad_sector)
         {
@@ -127,6 +127,20 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
         }
         fs.put(0x02);
         fs.write((char *)&sector->header.address, sizeof(sector->header.address));
+    }
+
+    uint8_t mode_byte = track_type == TrackType::MODE1_2352 ? 0x01 :
+                        track_type == TrackType::MODE2_2352 ? 0x02 :
+                        0x00;
+    if(std::memcmp(sector->header.mode, msf, sizeof(msf)))
+    {
+        if(!bad_sector)
+        {
+            bad_sector = true;
+            fs.write((char *)&sector_num, sizeof(sector_num));
+        }
+        fs.put(0x03);
+        fs.write((char *)&sector->header.mode, sizeof(sector->header.mode));
     }
 
     if(sector->header.mode == 1)
@@ -294,13 +308,13 @@ export int redumper_skeleton(Context &ctx, Options &options)
     {
         for(auto const &t : cue_get_entries(image_prefix + ".cue"))
         {
-            // skip audio tracks
-            if(t.second == TrackType::AUDIO || t.second == TrackType::CDG)
-                continue;
+            // supported track types only
+            if(t.second == TrackType::MODE1_2352 || t.second == TrackType::MODE2_2352)
+            {
+                auto track_prefix = (std::filesystem::path(options.image_path) / std::filesystem::path(t.first).stem()).string();
 
-            auto track_prefix = (std::filesystem::path(options.image_path) / std::filesystem::path(t.first).stem()).string();
-
-            skeleton(track_prefix, (std::filesystem::path(options.image_path) / t.first).string(), false, t.second, options);
+                skeleton(track_prefix, (std::filesystem::path(options.image_path) / t.first).string(), false, t.second, options);
+            }
         }
     }
     else if(std::filesystem::exists(image_prefix + ".iso"))
