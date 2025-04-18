@@ -155,6 +155,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
             }
             fs.put(0x04);
             fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
+            LOG("edc: 0x{:08X} (expected 0x{:08X})", edc, sector->mode1.edc);
         }
         if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
         {
