@@ -59,7 +59,7 @@ export enum class CueMode : uint8_t
     UNKNOWN = 255
 };
 
-inline bool operator bool(CueMode mode)
+inline operator bool(CueMode mode)
 {
     return mode == CueMode::AUDIO || mode == CueMode::CDG || mode == CueMode::UNKNOWN;
 }
