@@ -1,7 +1,6 @@
 module;
 
 #include <algorithm>
-#include <array>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -33,7 +32,7 @@ import utils.misc;
 namespace gpsxre
 {
 
-const std::array<uint8_t, 4> EXO_MAGIC = { '.', 'E', 'X', 'O' };
+const uint8_t EXO_MAGIC[] = { '.', 'E', 'X', 'O' };
 const uint32_t EXO_VER = 1;
 
 typedef std::tuple<std::string, uint32_t, uint32_t, uint32_t> ContentEntry;
@@ -101,24 +100,37 @@ void write_sector(std::fstream &fs, std::vector<uint8_t> &data, bool iso)
 }
 
 
-void write_exo(std::fstream &fs, std::vector<uint8_t> &data)
+void write_exo(std::fstream &fs, std::vector<uint8_t> &data, , uint32_t sector_num, TrackType track_type)
 {
     auto sector = (Sector *)data.data();
 
+    bool bad_sector = false;
+
+    if(memcmp(sector->sync, CD_DATA_SYNC, sizeof(CD_DATA_SYNC)))
+    {
+        if(!bad_sector)
+        {
+            bad_sector = true;
+            fs.write((char *)&sector_num, sizeof(sector_num));
+        }
+        fs.put(0x01)
+        fs.write((char *)&sector->sync, sizeof(sector->sync));
+    }
+
     if(sector->header.mode == 1)
     {
-        fs.write((char *)&sector->mode1.edc, 4);
+        fs.write((char *)&sector->mode1.edc, sizeof(&sector->mode1.edc));
         fs.write((char *)&sector->mode1.ecc, sizeof(Sector::ECC));
     }
     else if(sector->header.mode == 2)
     {
         if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
         {
-            fs.write((char *)&sector->mode2.xa.form2.edc, 4);
+            fs.write((char *)&sector->mode2.xa.form2.edc, sizeof(&sector->mode2.xa.form2.edc));
         }
         else
         {
-            fs.write((char *)&sector->mode2.xa.form1.edc, 4);
+            fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(&sector->mode2.xa.form1.edc));
             fs.write((char *)&sector->mode2.xa.form1.ecc, sizeof(Sector::ECC));
         }
     }
@@ -249,7 +261,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
 
         if(!iso)
         {
-            write_exo(exo_fs, sector);
+            write_exo(exo_fs, sector, s, track_type);
             if(exo_fs.fail())
                 throw_line("write failed ({})", exo_path.filename().string());
         }
