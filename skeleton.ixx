@@ -117,8 +117,17 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
         fs.write((char *)&sector->sync, sizeof(sector->sync));
     }
 
-    uint8_t msf[] = { 0x00, 0x02, 0x00 };
+    MSF msf = LBA_to_MSF(sector_num);
     if(memcmp(sector->header.address, msf, sizeof(msf)))
+    {
+        if(!bad_sector)
+        {
+            bad_sector = true;
+            fs.write((char *)&sector_num, sizeof(sector_num));
+        }
+        fs.put(0x02);
+        fs.write((char *)&sector->header.address, sizeof(sector->header.address));
+    }
 
     if(sector->header.mode == 1)
     {
