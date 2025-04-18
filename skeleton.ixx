@@ -100,7 +100,7 @@ void write_sector(std::fstream fs, std::vector<uint8_t> sector, bool iso)
 }
 
 
-void write_exo(std::fstream fs,  std::vector<uint8_t> sector)
+void write_exo(std::fstream fs, std::vector<uint8_t> sector)
 {
     auto sector = (Sector *)sector.data();
 
