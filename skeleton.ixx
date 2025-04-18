@@ -17,6 +17,8 @@ export module skeleton;
 import cd.cd;
 import cd.cdrom;
 import cd.common;
+import cd.ecc;
+import cd.edc;
 import common;
 import filesystem.iso9660;
 import options;
@@ -143,7 +145,16 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
 
     if(sector->header.mode == 1)
     {
-        // todo: calculate EDC
+        auto edc = EDC().update((uint8_t *)sector->mode1.user_data, sizeof(sector->mode1.user_data)).final();
+        if(sector->mode1.edc != edc)
+        {
+            if(!bad_sector)
+            {
+                bad_sector = true;
+                fs.write((char *)&sector_num, sizeof(sector_num));
+            }
+            fs.put(0x04);
+        }
         if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
         {
             if(!bad_sector)
@@ -161,11 +172,29 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
         // todo: calculate subheader
         if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
         {
-            // todo: calculate edc
+            auto edc = EDC().update((uint8_t *)sector->mode2.xa.form2.user_data, sizeof(sector->mode2.xa.form2.user_data)).final();
+            if(sector->mode2.xa.form2.edc != edc)
+            {
+                if(!bad_sector)
+                {
+                    bad_sector = true;
+                    fs.write((char *)&sector_num, sizeof(sector_num));
+                }
+                fs.put(0x04);
+            }
         }
         else
         {
-            // todo: calculate edc
+            auto edc = EDC().update((uint8_t *)sector->mode2.xa.form1.user_data, sizeof(sector->mode2.xa.form1.user_data)).final();
+            if(sector->mode2.xa.form1.edc != edc)
+            {
+                if(!bad_sector)
+                {
+                    bad_sector = true;
+                    fs.write((char *)&sector_num, sizeof(sector_num));
+                }
+                fs.put(0x04);
+            }
             // todo: calculate ecc
         }
     }
@@ -266,16 +295,10 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         if(!exo_fs.is_open())
             throw_line("unable to create file ({})", exo_path.filename().string());
 
-        exo_fs.write((char *)EXO_MAGIC, sizeof(EXO_MAGIC));
-        if(exo_fs.fail())
-            throw_line("write failed ({})", exo_path.filename().string());
-        exo_fs.write((char *)(&EXO_VER), sizeof(EXO_VER));
-        if(exo_fs.fail())
-            throw_line("write failed ({})", exo_path.filename().string());
-        exo_fs.write((char *)(&sectors_count), sizeof(sectors_count));
-        if(exo_fs.fail())
-            throw_line("write failed ({})", exo_path.filename().string());
-        exo_fs.write((char *)(&track_type), sizeof(track_type));
+        exo_fs.write((char *)EXO_MAGIC, sizeof(EXO_MAGIC))
+              .write((char *)(&EXO_VER), sizeof(EXO_VER))
+              .write((char *)(&sectors_count), sizeof(sectors_count))
+              .write((char *)(&(uint32_t)track_type), sizeof((uint32_t)track_type));
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
     }
