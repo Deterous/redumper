@@ -32,6 +32,9 @@ import utils.misc;
 namespace gpsxre
 {
 
+const std::array<uint8_t, 4> EXO_MAGIC = { '.', 'E', 'X', 'O' };
+const uint32_t EXO_VER = 1;
+
 typedef std::tuple<std::string, uint32_t, uint32_t, uint32_t> ContentEntry;
 
 
@@ -62,36 +65,65 @@ void erase_sector(uint8_t *s, bool iso)
         auto sector = (Sector *)s;
 
         if(sector->header.mode == 1)
-        {
             memset(sector->mode1.user_data, 0x00, FORM1_DATA_SIZE);
-            memset(&sector->mode1.ecc, 0x00, sizeof(Sector::ECC));
-            sector->mode1.edc = 0;
-        }
         else if(sector->header.mode == 2)
         {
             if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
-            {
                 memset(sector->mode2.xa.form2.user_data, 0x00, FORM2_DATA_SIZE);
-                sector->mode2.xa.form2.edc = 0;
-            }
             else
-            {
                 memset(sector->mode2.xa.form1.user_data, 0x00, FORM1_DATA_SIZE);
-                memset(&sector->mode2.xa.form1.ecc, 0x00, sizeof(Sector::ECC));
-                sector->mode2.xa.form1.edc = 0;
-            }
+        }
+        else
+            memset(sector->mode2.user_data, 0x00, MODE0_DATA_SIZE);
+    }
+}
+
+
+void write_sector(std::fstream fs, uint8_t *s, bool iso)
+{
+    if(iso)
+        fs.write(s, FORM1_DATA_SIZE);
+    else
+    {
+        auto sector = (Sector *)s;
+
+        if(sector->header.mode == 1)
+            fs.write(sector->mode1.user_data, FORM1_DATA_SIZE);
+        else if(sector->header.mode == 2)
+        {
+            if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
+                fs.write(sector->mode2.xa.form2.user_data, FORM2_DATA_SIZE);
+            else
+                fs.write(sector->mode2.xa.form1.user_data, FORM1_DATA_SIZE);
         }
     }
 }
 
 
-void skeleton(const std::string &image_prefix, const std::string &image_path, bool iso, Options &options)
+void write_exo(std::fstream fs, uint8_t *s)
+{
+    auto sector = (Sector *)s;
+
+    if(sector->header.mode == 1)
+        fs.write(sector->mode1.user_data, FORM1_DATA_SIZE);
+    else if(sector->header.mode == 2)
+    {
+        if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
+            fs.write(sector->mode2.xa.form2.user_data, FORM2_DATA_SIZE);
+        else
+            fs.write(sector->mode2.xa.form1.user_data, FORM1_DATA_SIZE);
+    }
+}
+
+
+void skeleton(const std::string &image_prefix, const std::string &image_path, bool iso, CueMode cue_mode, Options &options)
 {
     std::filesystem::path skeleton_path(image_prefix + ".skeleton");
     std::filesystem::path hash_path(image_prefix + ".hash");
+    std::filesystem::path exo_path(image_prefix + ".exo");
 
-    if(!options.overwrite && (std::filesystem::exists(skeleton_path) || std::filesystem::exists(hash_path)))
-        throw_line("skeleton/hash file already exists");
+    if(!options.overwrite && (std::filesystem::exists(skeleton_path) || std::filesystem::exists(hash_path) || std::filesystem::exists(exo_path)))
+        throw_line("skeleton/hash/exo file already exists");
 
     std::unique_ptr<SectorReader> sector_reader;
     if(iso)
@@ -171,9 +203,28 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         throw_line("unable to create file ({})", skeleton_path.filename().string());
 
     std::vector<uint8_t> sector(iso ? FORM1_DATA_SIZE : CD_DATA_SIZE);
+    if(!iso)
+    {
+        std::fstream exo_fs(exo_path, std::fstream::out | std::fstream::binary);
+        if(!exo_fs.is_open())
+            throw_line("unable to create file ({})", exo_path.filename().string());
+
+        exo_fs.write((char *)EXO_MAGIC, sizeof(EXO_MAGIC));
+        if(exo_fs.fail())
+            throw_line("write failed ({})", exo_path.filename().string());
+        exo_fs.write((char *)(&EXO_VER), sizeof(EXO_VER));
+        if(exo_fs.fail())
+            throw_line("write failed ({})", exo_path.filename().string());
+        exo_fs.write((char *)(&sectors_count), sizeof(sectors_count));
+        if(exo_fs.fail())
+            throw_line("write failed ({})", exo_path.filename().string());
+        exo_fs.write((char *)(&cue_mode), sizeof(cue_mode));
+        if(exo_fs.fail())
+            throw_line("write failed ({})", exo_path.filename().string());  
+    }
     for(uint32_t s = 0; s < sectors_count; ++s)
     {
-        progress_output("creating skeleton", s, sectors_count);
+        progress_output(iso ? "creating skeleton" : "creating exo/skeleton", s, sectors_count);
 
         image_fs.read((char *)sector.data(), sector.size());
         if(image_fs.fail())
@@ -182,11 +233,18 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         if(inside_contents(contents, s))
             erase_sector(sector.data(), iso);
 
-        skeleton_fs.write((char *)sector.data(), sector.size());
+        write_sector(skeleton_fs, (char *)sector.data(), iso);
         if(skeleton_fs.fail())
             throw_line("write failed ({})", skeleton_path.filename().string());
+        
+        if(!iso)
+        {
+            write_exo(exo_fs, (char *)sector.data());
+            if(exo_fs.fail())
+                throw_line("write failed ({})", exo_path.filename().string());      
+        }
     }
-    progress_output("creating skeleton", sectors_count, sectors_count);
+    progress_output(iso ? "creating skeleton" : "creating exo/skeleton", sectors_count, sectors_count);
 
     LOGC("");
 }
@@ -208,12 +266,12 @@ export int redumper_skeleton(Context &ctx, Options &options)
 
             auto track_prefix = (std::filesystem::path(options.image_path) / std::filesystem::path(t.first).stem()).string();
 
-            skeleton(track_prefix, (std::filesystem::path(options.image_path) / t.first).string(), false, options);
+            skeleton(track_prefix, (std::filesystem::path(options.image_path) / t.first).string(), false, t.second, options);
         }
     }
     else if(std::filesystem::exists(image_prefix + ".iso"))
     {
-        skeleton(image_prefix, image_prefix + ".iso", true, options);
+        skeleton(image_prefix, image_prefix + ".iso", true, 0, options);
     }
     else
         throw_line("image file not found");
