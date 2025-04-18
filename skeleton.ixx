@@ -145,7 +145,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
 
     if(sector->header.mode == 1)
     {
-        auto edc = EDC().update((uint8_t *)sector->mode1.user_data, sizeof(sector->mode1.user_data)).final();
+        auto edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
         if(sector->mode1.edc != edc)
         {
             if(!bad_sector)
@@ -154,6 +154,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
                 fs.write((char *)&sector_num, sizeof(sector_num));
             }
             fs.put(0x04);
+            fs.write((char *)sector->mode1.edc, sizeof(sector->mode1.edc));
         }
         if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
         {
@@ -172,7 +173,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
         // todo: calculate subheader
         if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
         {
-            auto edc = EDC().update((uint8_t *)sector->mode2.xa.form2.user_data, sizeof(sector->mode2.xa.form2.user_data)).final();
+            auto edc = EDC().update((uint8_t *)sector->mode2.xa.sub_header, offsetof(Sector, mode2.xa.form2.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
             if(sector->mode2.xa.form2.edc != edc)
             {
                 if(!bad_sector)
@@ -181,11 +182,12 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
                     fs.write((char *)&sector_num, sizeof(sector_num));
                 }
                 fs.put(0x04);
+                fs.write((char *)sector->mode2.xa.form2.edc, sizeof(sector->mode2.xa.form2.edc));
             }
         }
         else
         {
-            auto edc = EDC().update((uint8_t *)sector->mode2.xa.form1.user_data, sizeof(sector->mode2.xa.form1.user_data)).final();
+            auto edc = EDC().update((uint8_t *)sector->mode2.xa.sub_header, offsetof(Sector, mode2.xa.form1.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
             if(sector->mode2.xa.form1.edc != edc)
             {
                 if(!bad_sector)
@@ -194,6 +196,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
                     fs.write((char *)&sector_num, sizeof(sector_num));
                 }
                 fs.put(0x04);
+                fs.write((char *)sector->mode2.xa.form1.edc, sizeof(sector->mode2.xa.form1.edc));
             }
             // todo: calculate ecc
         }
@@ -296,14 +299,8 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
             throw_line("unable to create file ({})", exo_path.filename().string());
 
         exo_fs.write((char *)EXO_MAGIC, sizeof(EXO_MAGIC));
-        if(exo_fs.fail())
-            throw_line("write failed ({})", exo_path.filename().string());
         exo_fs.write((char *)(&EXO_VER), sizeof(EXO_VER));
-        if(exo_fs.fail())
-            throw_line("write failed ({})", exo_path.filename().string());
         exo_fs.write((char *)(&sectors_count), sizeof(sectors_count));
-        if(exo_fs.fail())
-            throw_line("write failed ({})", exo_path.filename().string());
         uint32_t track_type_full = (uint32_t)track_type;
         exo_fs.write((char *)(&track_type_full), sizeof(track_type_full));
         if(exo_fs.fail())
