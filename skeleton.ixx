@@ -79,13 +79,13 @@ void erase_sector(uint8_t *s, bool iso)
 }
 
 
-void write_sector(std::fstream fs, uint8_t *s, bool iso)
+void write_sector(std::fstream fs, std::vector<uint8_t> sector, bool iso)
 {
     if(iso)
-        fs.write(s, FORM1_DATA_SIZE);
+        fs.write((char *)sector.data(), FORM1_DATA_SIZE);
     else
     {
-        auto sector = (Sector *)s;
+        auto sector = (Sector *)sector.data();
 
         if(sector->header.mode == 1)
             fs.write(sector->mode1.user_data, FORM1_DATA_SIZE);
@@ -100,18 +100,26 @@ void write_sector(std::fstream fs, uint8_t *s, bool iso)
 }
 
 
-void write_exo(std::fstream fs, uint8_t *s)
+void write_exo(std::fstream fs,  std::vector<uint8_t> sector)
 {
-    auto sector = (Sector *)s;
+    auto sector = (Sector *)sector.data();
 
     if(sector->header.mode == 1)
-        fs.write(sector->mode1.user_data, FORM1_DATA_SIZE);
+    {
+        fs.write(&sector->mode1.edc, 4);
+        fs.write(&sector->mode1.ecc, sizeof(Sector::ECC));
+    }
     else if(sector->header.mode == 2)
     {
         if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
-            fs.write(sector->mode2.xa.form2.user_data, FORM2_DATA_SIZE);
+        {
+            fs.write(sector->mode2.xa.form2.edc, 4);
+        }
         else
-            fs.write(sector->mode2.xa.form1.user_data, FORM1_DATA_SIZE);
+        {
+            fs.write(sector->mode2.xa.form1.edc, 4);
+            fs.write(&sector->mode2.xa.form1.ecc, sizeof(Sector::ECC));
+        }
     }
 }
 
@@ -233,7 +241,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         if(inside_contents(contents, s))
             erase_sector(sector.data(), iso);
 
-        write_sector(skeleton_fs, (char *)sector.data(), iso);
+        write_sector(skeleton_fs, sector.data(), iso);
         if(skeleton_fs.fail())
             throw_line("write failed ({})", skeleton_path.filename().string());
 
