@@ -81,7 +81,7 @@ void erase_sector(uint8_t *s, bool iso)
 }
 
 
-void write_sector(std::fstream &fs, std::vector<uint8_t> &data, bool iso)
+void write_skeleton(std::fstream &fs, std::vector<uint8_t> &data, bool iso)
 {
     if(iso)
         fs.write((char *)data.data(), FORM1_DATA_SIZE);
@@ -102,7 +102,7 @@ void write_sector(std::fstream &fs, std::vector<uint8_t> &data, bool iso)
 }
 
 
-void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num, TrackType track_type)
+void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, TrackType track_type)
 {
     auto sector = (Sector *)data.data();
 
@@ -113,19 +113,19 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
         if(!bad_sector)
         {
             bad_sector = true;
-            fs.write((char *)&sector_num, sizeof(sector_num));
+            fs.write((char *)&lba, sizeof(lba));
         }
         fs.put(0x01);
         fs.write((char *)sector->sync, sizeof(sector->sync));
     }
 
-    MSF msf = LBA_to_BCDMSF(sector_num);
+    MSF msf = LBA_to_BCDMSF(lba);
     if(std::memcmp(sector->header.address.raw, msf.raw, sizeof(sector->header.address.raw)))
     {
         if(!bad_sector)
         {
             bad_sector = true;
-            fs.write((char *)&sector_num, sizeof(sector_num));
+            fs.write((char *)&lba, sizeof(lba));
         }
         fs.put(0x02);
         fs.write((char *)sector->header.address.raw, sizeof(sector->header.address.raw));
@@ -137,7 +137,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
         if(!bad_sector)
         {
             bad_sector = true;
-            fs.write((char *)&sector_num, sizeof(sector_num));
+            fs.write((char *)&lba, sizeof(lba));
         }
         fs.put(0x03);
         fs.write((char *)&sector->header.mode, sizeof(sector->header.mode));
@@ -151,7 +151,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
             if(!bad_sector)
             {
                 bad_sector = true;
-                fs.write((char *)&sector_num, sizeof(sector_num));
+                fs.write((char *)&lba, sizeof(lba));
             }
             fs.put(0x04);
             fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
@@ -162,7 +162,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
             if(!bad_sector)
             {
                 bad_sector = true;
-                fs.write((char *)&sector_num, sizeof(sector_num));
+                fs.write((char *)&lba, sizeof(lba));
             }
             fs.put(0x05);
             fs.write((char *)sector->mode1.intermediate, sizeof(sector->mode1.intermediate));
@@ -180,7 +180,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
                 if(!bad_sector)
                 {
                     bad_sector = true;
-                    fs.write((char *)&sector_num, sizeof(sector_num));
+                    fs.write((char *)&lba, sizeof(lba));
                 }
                 fs.put(0x04);
                 fs.write((char *)&sector->mode2.xa.form2.edc, sizeof(sector->mode2.xa.form2.edc));
@@ -194,7 +194,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
                 if(!bad_sector)
                 {
                     bad_sector = true;
-                    fs.write((char *)&sector_num, sizeof(sector_num));
+                    fs.write((char *)&lba, sizeof(lba));
                 }
                 fs.put(0x04);
                 fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(sector->mode2.xa.form1.edc));
@@ -315,19 +315,19 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         if(image_fs.fail())
             throw_line("read failed ({})", image_path);
 
-        if(inside_contents(contents, s))
-            erase_sector(sector.data(), iso);
-
-        write_sector(skeleton_fs, sector, iso);
-        if(skeleton_fs.fail())
-            throw_line("write failed ({})", skeleton_path.filename().string());
-
         if(!iso)
         {
             write_exo(exo_fs, sector, s, track_type);
             if(exo_fs.fail())
                 throw_line("write failed ({})", exo_path.filename().string());
         }
+
+        if(inside_contents(contents, s))
+            erase_sector(sector.data(), iso);
+
+        write_skeleton(skeleton_fs, sector, iso);
+        if(skeleton_fs.fail())
+            throw_line("write failed ({})", skeleton_path.filename().string());
     }
     progress_output(iso ? "creating skeleton" : "creating exo/skeleton", sectors_count, sectors_count);
 

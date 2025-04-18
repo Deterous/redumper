@@ -44,7 +44,7 @@ void regenerate_data_sector(Sector &sector, int32_t lba)
 
     if(sector.header.mode == 1)
     {
-        std::fill_n(sector.mode1.intermediate, sizeof(sector.mode1.intermediate), 0x00);
+        std::copy_n(CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE), sector.mode1.intermediate);
 
         Sector::ECC ecc = ECC().Generate((uint8_t *)&sector.header);
         std::copy_n(ecc.p_parity, sizeof(ecc.p_parity), sector.mode1.ecc.p_parity);
