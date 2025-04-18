@@ -106,19 +106,19 @@ void write_exo(std::fstream fs, std::vector<uint8_t> data)
 
     if(sector->header.mode == 1)
     {
-        fs.write((char *)sector->mode1.edc, 4);
-        fs.write((char *)sector->mode1.ecc, sizeof(Sector::ECC));
+        fs.write((char *)&sector->mode1.edc, 4);
+        fs.write((char *)&sector->mode1.ecc, sizeof(Sector::ECC));
     }
     else if(sector->header.mode == 2)
     {
         if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
         {
-            fs.write((char *)sector->mode2.xa.form2.edc, 4);
+            fs.write((char *)&sector->mode2.xa.form2.edc, 4);
         }
         else
         {
-            fs.write((char *)sector->mode2.xa.form1.edc, 4);
-            fs.write((char *)sector->mode2.xa.form1.ecc, sizeof(Sector::ECC));
+            fs.write((char *)&sector->mode2.xa.form1.edc, 4);
+            fs.write((char *)&sector->mode2.xa.form1.ecc, sizeof(Sector::ECC));
         }
     }
 }
@@ -211,13 +211,14 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         throw_line("unable to create file ({})", skeleton_path.filename().string());
 
     std::vector<uint8_t> sector(iso ? FORM1_DATA_SIZE : CD_DATA_SIZE);
+    std::fstream exo_fs;
     if(!iso)
     {
-        std::fstream exo_fs(exo_path, std::fstream::out | std::fstream::binary);
+        exo_fs.open(exo_path, std::fstream::out | std::fstream::binary);
         if(!exo_fs.is_open())
             throw_line("unable to create file ({})", exo_path.filename().string());
 
-        exo_fs.write((char *)EXO_MAGIC, sizeof(EXO_MAGIC));
+        exo_fs.write((char *)EXO_MAGIC.data(), sizeof(EXO_MAGIC));
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
         exo_fs.write((char *)(&EXO_VER), sizeof(EXO_VER));
@@ -241,13 +242,13 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         if(inside_contents(contents, s))
             erase_sector(sector.data(), iso);
 
-        write_sector(skeleton_fs, sector.data(), iso);
+        write_sector(skeleton_fs, sector, iso);
         if(skeleton_fs.fail())
             throw_line("write failed ({})", skeleton_path.filename().string());
 
         if(!iso)
         {
-            write_exo(exo_fs, (char *)sector.data());
+            write_exo(exo_fs, sector);
             if(exo_fs.fail())
                 throw_line("write failed ({})", exo_path.filename().string());
         }
@@ -279,7 +280,7 @@ export int redumper_skeleton(Context &ctx, Options &options)
     }
     else if(std::filesystem::exists(image_prefix + ".iso"))
     {
-        skeleton(image_prefix, image_prefix + ".iso", true, 0, options);
+        skeleton(image_prefix, image_prefix + ".iso", true, (CueMode)0, options);
     }
     else
         throw_line("image file not found");

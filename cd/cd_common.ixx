@@ -59,6 +59,10 @@ export enum class CueMode : uint8_t
     UNKNOWN = 255
 };
 
+inline bool operator bool(CueMode mode) {
+    return mode == CueMode::AUDIO || mode == CueMode::CDG || mode == CueMode::UNKNOWN;
+}
+
 
 export int32_t sample_offset_a2r(uint32_t absolute)
 {
