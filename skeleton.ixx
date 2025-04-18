@@ -79,7 +79,7 @@ void erase_sector(uint8_t *s, bool iso)
 }
 
 
-void write_sector(std::fstream& fs, std::vector<uint8_t>& data, bool iso)
+void write_sector(std::fstream &fs, std::vector<uint8_t> &data, bool iso)
 {
     if(iso)
         fs.write((char *)data.data(), FORM1_DATA_SIZE);
@@ -100,7 +100,7 @@ void write_sector(std::fstream& fs, std::vector<uint8_t>& data, bool iso)
 }
 
 
-void write_exo(std::fstream& fs, std::vector<uint8_t>& data)
+void write_exo(std::fstream &fs, std::vector<uint8_t> &data)
 {
     auto sector = (Sector *)data.data();
 
