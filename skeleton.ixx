@@ -118,6 +118,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
     }
 
     MSF msf = LBA_to_MSF(sector_num);
+    LOG("sector num: {}, msf: {}:{}:{}, actual msf: {}:{}:{}", sector_num, msf.m, msf.s, msf.f, sector->header.address.m, sector->header.address.s, sector->header.address.m);
     if(std::memcmp(sector->header.address.raw, msf.raw, sizeof(sector->header.address.raw)))
     {
         if(!bad_sector)
