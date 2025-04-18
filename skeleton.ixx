@@ -144,7 +144,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
     if(sector->header.mode == 1)
     {
         // todo: calculate EDC
-        //fs.write((char *)&sector->mode1.edc, sizeof(&sector->mode1.edc));
+        // fs.write((char *)&sector->mode1.edc, sizeof(&sector->mode1.edc));
         if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
         {
             if(!bad_sector)
@@ -156,7 +156,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
             fs.write((char *)&sector->mode1.intermediate, sizeof(sector->mode1.intermediate));
         }
         // todo: calculate ECC
-        //fs.write((char *)&sector->mode1.ecc, sizeof(Sector::ECC));
+        // fs.write((char *)&sector->mode1.ecc, sizeof(Sector::ECC));
     }
     else if(sector->header.mode == 2)
     {
@@ -164,14 +164,14 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
         if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
         {
             // todo: calculate edc
-            //fs.write((char *)&sector->mode2.xa.form2.edc, sizeof(&sector->mode2.xa.form2.edc));
+            // fs.write((char *)&sector->mode2.xa.form2.edc, sizeof(&sector->mode2.xa.form2.edc));
         }
         else
         {
             // todo: calculate edc
-            //fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(&sector->mode2.xa.form1.edc));
+            // fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(&sector->mode2.xa.form1.edc));
             // todo: calculate ecc
-            //fs.write((char *)&sector->mode2.xa.form1.ecc, sizeof(Sector::ECC));
+            // fs.write((char *)&sector->mode2.xa.form1.ecc, sizeof(Sector::ECC));
         }
     }
 }
