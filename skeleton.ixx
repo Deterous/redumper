@@ -88,13 +88,13 @@ void write_sector(std::fstream fs, std::vector<uint8_t> data, bool iso)
         auto sector = (Sector *)data.data();
 
         if(sector->header.mode == 1)
-            fs.write(sector->mode1.user_data, FORM1_DATA_SIZE);
+            fs.write((char *)sector->mode1.user_data, FORM1_DATA_SIZE);
         else if(sector->header.mode == 2)
         {
             if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
-                fs.write(sector->mode2.xa.form2.user_data, FORM2_DATA_SIZE);
+                fs.write((char *)sector->mode2.xa.form2.user_data, FORM2_DATA_SIZE);
             else
-                fs.write(sector->mode2.xa.form1.user_data, FORM1_DATA_SIZE);
+                fs.write((char *)sector->mode2.xa.form1.user_data, FORM1_DATA_SIZE);
         }
     }
 }
@@ -106,19 +106,19 @@ void write_exo(std::fstream fs, std::vector<uint8_t> data)
 
     if(sector->header.mode == 1)
     {
-        fs.write(&sector->mode1.edc, 4);
-        fs.write(&sector->mode1.ecc, sizeof(Sector::ECC));
+        fs.write((char *)sector->mode1.edc, 4);
+        fs.write((char *)sector->mode1.ecc, sizeof(Sector::ECC));
     }
     else if(sector->header.mode == 2)
     {
         if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
         {
-            fs.write(sector->mode2.xa.form2.edc, 4);
+            fs.write((char *)sector->mode2.xa.form2.edc, 4);
         }
         else
         {
-            fs.write(sector->mode2.xa.form1.edc, 4);
-            fs.write(&sector->mode2.xa.form1.ecc, sizeof(Sector::ECC));
+            fs.write((char *)sector->mode2.xa.form1.edc, 4);
+            fs.write((char *)sector->mode2.xa.form1.ecc, sizeof(Sector::ECC));
         }
     }
 }
