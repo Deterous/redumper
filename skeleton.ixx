@@ -305,7 +305,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
         uint32_t track_type_full = (uint32_t)track_type;
-        exo_fs.write((char *)track_type_full, sizeof(track_type_full));
+        exo_fs.write((char *)(&track_type_full), sizeof(track_type_full));
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
     }
