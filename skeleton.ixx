@@ -170,7 +170,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
         }
 
         Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
-        if(memcmp(ecc.p_parity, sector->mode1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector.mode1.ecc.q_parity, sizeof(ecc.q_parity)))
+        if(memcmp(ecc.p_parity, sector->mode1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector->mode1.ecc.q_parity, sizeof(ecc.q_parity)))
         {
             if(!bad_sector)
             {
@@ -178,8 +178,8 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 fs.write((char *)&lba, sizeof(lba));
             }
             fs.put(0x06);
-            fs.write((char *)sector->mode1.ecc.p_parity);
-            fs.write((char *)sector->mode1.ecc.q_parity);
+            fs.write((char *)sector->mode1.ecc.p_parity, sizeof(sector->mode1.ecc.p_parity));
+            fs.write((char *)sector->mode1.ecc.q_parity, sizeof(sector->mode1.ecc.q_parity));
         }
     }
     else if(sector->header.mode == 2)
@@ -214,7 +214,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
             }
 
             Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
-            if(memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector.mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
+            if(memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector->mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
             {
                 if(!bad_sector)
                 {
@@ -222,8 +222,8 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                     fs.write((char *)&lba, sizeof(lba));
                 }
                 fs.put(0x06);
-                fs.write((char *)sector->mode2.xa.form1.ecc.p_parity);
-                fs.write((char *)sector->mode2.xa.form1.ecc.q_parity);
+                fs.write((char *)sector->mode2.xa.form1.ecc.p_parity, sizeof(sector->mode1.ecc.p_parity));
+                fs.write((char *)sector->mode2.xa.form1.ecc.q_parity, sizeof(sector->mode1.ecc.q_parity));
             }
         }
     }
