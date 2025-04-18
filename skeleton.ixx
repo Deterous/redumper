@@ -124,7 +124,7 @@ void write_exo(std::fstream fs, std::vector<uint8_t> data)
 }
 
 
-void skeleton(const std::string &image_prefix, const std::string &image_path, bool iso, CueMode cue_mode, Options &options)
+void skeleton(const std::string &image_prefix, const std::string &image_path, bool iso, TrackType track_type, Options &options)
 {
     std::filesystem::path skeleton_path(image_prefix + ".skeleton");
     std::filesystem::path hash_path(image_prefix + ".hash");
@@ -227,7 +227,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         exo_fs.write((char *)(&sectors_count), sizeof(sectors_count));
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
-        exo_fs.write((char *)(&cue_mode), sizeof(cue_mode));
+        exo_fs.write((char *)(&track_type), sizeof(track_type));
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
     }
@@ -270,7 +270,7 @@ export int redumper_skeleton(Context &ctx, Options &options)
         for(auto const &t : cue_get_entries(image_prefix + ".cue"))
         {
             // skip audio tracks
-            if(!t.second)
+            if(t.second == TrackType::AUDIO || t.second == TrackType::CDG || t.second == TrackType::ISO)
                 continue;
 
             auto track_prefix = (std::filesystem::path(options.image_path) / std::filesystem::path(t.first).stem()).string();
@@ -280,7 +280,7 @@ export int redumper_skeleton(Context &ctx, Options &options)
     }
     else if(std::filesystem::exists(image_prefix + ".iso"))
     {
-        skeleton(image_prefix, image_prefix + ".iso", true, (CueMode)0, options);
+        skeleton(image_prefix, image_prefix + ".iso", true, TrackType::ISO, options);
     }
     else
         throw_line("image file not found");

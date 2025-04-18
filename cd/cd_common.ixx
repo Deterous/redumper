@@ -43,7 +43,7 @@ export constexpr int32_t LBA_START = -45150; // MSVC internal compiler error: MS
 export constexpr uint32_t LEADOUT_OVERREAD_COUNT = 100;
 
 
-export enum class CueMode : uint8_t
+export enum class TrackType : uint8_t
 {
     AUDIO = 0,
     MODE1_2352 = 1,
@@ -56,13 +56,8 @@ export enum class CueMode : uint8_t
     MODE0_2352 = 8,
     MODE2_2048 = 9,
     MODE2_2324 = 10,
-    UNKNOWN = 255
+    ISO = 255
 };
-
-inline operator bool(CueMode mode)
-{
-    return mode == CueMode::AUDIO || mode == CueMode::CDG || mode == CueMode::UNKNOWN;
-}
 
 
 export int32_t sample_offset_a2r(uint32_t absolute)
