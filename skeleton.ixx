@@ -118,7 +118,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
     }
 
     MSF msf = LBA_to_MSF(sector_num);
-    if(std::memcmp(sector->header.address.raw, msf.raw, sizeof(msf)))
+    if(std::memcmp(sector->header.address.raw, msf.raw, sizeof(sector->header.address.raw)))
     {
         if(!bad_sector)
         {
@@ -126,7 +126,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t sector_num
             fs.write((char *)&sector_num, sizeof(sector_num));
         }
         fs.put(0x02);
-        fs.write((char *)sector->header.address, sizeof(sector->header.address));
+        fs.write((char *)sector->header.address.raw, sizeof(sector->header.address.raw));
     }
 
     uint8_t mode_byte = track_type == TrackType::MODE1_2352 ? 0x01 : track_type == TrackType::MODE2_2352 ? 0x02 : 0x00;
