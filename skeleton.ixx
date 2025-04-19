@@ -42,6 +42,7 @@ typedef std::tuple<std::string, uint32_t, uint32_t, uint32_t> ContentEntry;
 
 enum ExoErrorType : uint8_t
 {
+    NoError = 0,
     SyncError = 1,
     MSFError = 2,
     ModeError = 3,
@@ -93,13 +94,13 @@ void erase_sector(uint8_t *s, bool iso)
 }
 
 
-void write_skeleton(std::fstream &fs, std::vector<uint8_t> &data, bool iso)
+void write_skeleton(std::fstream &fs, uint8_t *s, bool iso)
 {
     if(iso)
-        fs.write((char *)data.data(), FORM1_DATA_SIZE);
+        fs.write((char *)s, FORM1_DATA_SIZE);
     else
     {
-        auto sector = (Sector *)data.data();
+        auto sector = (Sector *)s;
 
         if(sector->header.mode == 1)
             fs.write((char *)sector->mode1.user_data, FORM1_DATA_SIZE);
@@ -114,7 +115,7 @@ void write_skeleton(std::fstream &fs, std::vector<uint8_t> &data, bool iso)
 }
 
 
-void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, TrackType track_type)
+void write_exoskeleton(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, TrackType track_type)
 {
     auto sector = (Sector *)data.data();
 
@@ -157,7 +158,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
 
     if(sector->header.mode == 1)
     {
-        uint32_t edc = EDC().update(&sector, offsetof(Sector, mode1.edc)).final();
+        uint32_t edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
         if(sector->mode1.edc != edc)
         {
             if(!bad_sector)
@@ -167,13 +168,6 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
             }
             fs.put(ExoErrorType::EDCError);
             fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
-            if(lba == 0)
-            {
-                LOG("edc: 0x{:08X} (expected 0x{:08X})\n", edc, sector->mode1.edc);
-                LOG("sector:\n");
-                for(uint32_t value = 0; value < 2352; value++)
-                    LOG("{:08X}", data[value]);
-            }
         }
 
         if(memcmp(&sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
@@ -242,7 +236,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(sector->mode2.xa.form1.edc));
             }
 
-            Sector::ECC ecc(ECC().Generate(&sector->header));
+            Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
             if(memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector->mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
             {
                 if(!bad_sector)
@@ -250,27 +244,15 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                     bad_sector = true;
                     fs.write((char *)&lba, sizeof(lba));
                 }
-                if(lba == 0)
-                {
-                    if(memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)))
-                    {
-                        LOG("P parity mismatch\n");
-                        for(uint32_t value = 0; value < 172; value++)
-                            LOG("{:02X}", ecc.p_parity[value]);
-                    }
-                    if(memcmp(ecc.q_parity, sector->mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
-                    {
-                        LOG("Q parity mismatch\n");
-                        for(uint32_t value = 0; value < 104; value++)
-                            LOG("{:02X}", ecc.q_parity[value]);
-                    }
-                }
                 fs.put(ExoErrorType::ECCError);
                 fs.write((char *)sector->mode2.xa.form1.ecc.p_parity, sizeof(sector->mode1.ecc.p_parity));
                 fs.write((char *)sector->mode2.xa.form1.ecc.q_parity, sizeof(sector->mode1.ecc.q_parity));
             }
         }
     }
+
+    if(bad_sector)
+        fs.put(ExoErrorType::NoError);
 }
 
 
@@ -389,7 +371,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
 
         if(!iso)
         {
-            write_exo(exo_fs, sector, s, track_type);
+            write_exoskeleton(exo_fs, sector, s, track_type);
             if(exo_fs.fail())
                 throw_line("write failed ({})", exo_path.filename().string());
         }
@@ -397,7 +379,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         if(inside_contents(contents, s))
             erase_sector(sector.data(), iso);
 
-        write_skeleton(skeleton_fs, sector, iso);
+        write_skeleton(skeleton_fs, sector.data(), iso);
         if(skeleton_fs.fail())
             throw_line("write failed ({})", skeleton_path.filename().string());
     }
