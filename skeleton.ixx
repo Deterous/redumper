@@ -145,17 +145,6 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
 
     if(sector->header.mode == 1)
     {
-        if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
-        {
-            if(!bad_sector)
-            {
-                bad_sector = true;
-                fs.write((char *)&lba, sizeof(lba));
-            }
-            fs.put(0x05);
-            fs.write((char *)sector->mode1.intermediate, sizeof(sector->mode1.intermediate));
-        }
-
         Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
         if(memcmp(ecc.p_parity, sector->mode1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector->mode1.ecc.q_parity, sizeof(ecc.q_parity)))
         {
@@ -170,7 +159,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
         }
 
         uint32_t edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
-        if(sector->mode1.edc != edc)
+        if(sector.mode1.edc != edc)
         {
             if(!bad_sector)
             {
@@ -178,14 +167,35 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 fs.write((char *)&lba, sizeof(lba));
             }
             fs.put(0x04);
-            fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
-            LOG("edc: 0x{:08X} (expected 0x{:08X})", edc, sector->mode1.edc);
+            fs.write((char *)sector.mode1.edc, sizeof(sector.mode1.edc));
+            LOG("edc: 0x{:08X} (expected 0x{:08X})", edc, sector.mode1.edc);
+        }
+
+        if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
+        {
+            if(!bad_sector)
+            {
+                bad_sector = true;
+                fs.write((char *)&lba, sizeof(lba));
+            }
+            fs.put(0x05);
+            fs.write((char *)sector->mode1.intermediate, sizeof(sector->mode1.intermediate));
         }
     }
     else if(sector->header.mode == 2)
     {
         // todo: calculate subheader
-        // if(memcmp(&sector.mode2.xa.sub_header, &sector.mode2.xa.sub_header_copy, sizeof(sector.mode2.xa.sub_header)))
+        if(memcmp(sector->mode2.xa.sub_header, sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header)))
+        {
+            if(!bad_sector)
+            {
+                bad_sector = true;
+                fs.write((char *)&lba, sizeof(lba));
+            }
+            fs.put(0x07);
+            fs.write((char *)sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header_copy));
+        }
+
         if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
         {
             uint32_t edc = EDC().update((uint8_t *)&sector->mode2.xa.sub_header, offsetof(Sector, mode2.xa.form2.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
