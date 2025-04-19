@@ -35,7 +35,6 @@ namespace gpsxre
 {
 
 const uint8_t EXO_MAGIC[] = { '.', 'E', 'X', 'O' };
-const uint32_t EXO_VER = 0;
 
 typedef std::tuple<std::string, uint32_t, uint32_t, uint32_t> ContentEntry;
 
@@ -94,7 +93,7 @@ void erase_sector(uint8_t *s, bool iso)
 }
 
 
-void write_skeleton_cd(std::fstream &fs, uint8_t *s)
+void write_cd_skeleton(std::fstream &fs, uint8_t *s)
 {
     auto sector = (Sector *)s;
 
@@ -110,7 +109,7 @@ void write_skeleton_cd(std::fstream &fs, uint8_t *s)
 }
 
 
-void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType track_type)
+void write_cd_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType track_type)
 {
     auto sector = (Sector *)s;
     bool bad_sector = false;
@@ -120,7 +119,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
         if(!bad_sector)
         {
             bad_sector = true;
-            fs.write((char *)&lba, sizeof(lba));
+            fs.write((char *)&lba, 3);
         }
         fs.put(ExoErrorType::SyncError);
         fs.write((char *)sector->sync, sizeof(sector->sync));
@@ -132,7 +131,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
         if(!bad_sector)
         {
             bad_sector = true;
-            fs.write((char *)&lba, sizeof(lba));
+            fs.write((char *)&lba, 3);
         }
         fs.put(ExoErrorType::MSFError);
         fs.write((char *)sector->header.address.raw, sizeof(sector->header.address.raw));
@@ -144,7 +143,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
         if(!bad_sector)
         {
             bad_sector = true;
-            fs.write((char *)&lba, sizeof(lba));
+            fs.write((char *)&lba, 3);
         }
         fs.put(ExoErrorType::ModeError);
         fs.put(sector->header.mode);
@@ -158,7 +157,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
             if(!bad_sector)
             {
                 bad_sector = true;
-                fs.write((char *)&lba, sizeof(lba));
+                fs.write((char *)&lba, 3);
             }
             fs.put(ExoErrorType::EDCError);
             fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
@@ -169,7 +168,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
             if(!bad_sector)
             {
                 bad_sector = true;
-                fs.write((char *)&lba, sizeof(lba));
+                fs.write((char *)&lba, 3);
             }
             fs.put(ExoErrorType::IntermediateError);
             fs.write((char *)sector->mode1.intermediate, sizeof(sector->mode1.intermediate));
@@ -181,7 +180,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
             if(!bad_sector)
             {
                 bad_sector = true;
-                fs.write((char *)&lba, sizeof(lba));
+                fs.write((char *)&lba, 3);
             }
             fs.put(ExoErrorType::ECCError);
             fs.write((char *)sector->mode1.ecc.p_parity, sizeof(sector->mode1.ecc.p_parity));
@@ -196,7 +195,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
             if(!bad_sector)
             {
                 bad_sector = true;
-                fs.write((char *)&lba, sizeof(lba));
+                fs.write((char *)&lba, 3);
             }
             fs.put(ExoErrorType::SubheaderError);
             fs.write((char *)&sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header_copy));
@@ -210,7 +209,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
                 if(!bad_sector)
                 {
                     bad_sector = true;
-                    fs.write((char *)&lba, sizeof(lba));
+                    fs.write((char *)&lba, 3);
                 }
                 fs.put(ExoErrorType::EDCError);
                 fs.write((char *)&sector->mode2.xa.form2.edc, sizeof(sector->mode2.xa.form2.edc));
@@ -224,7 +223,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
                 if(!bad_sector)
                 {
                     bad_sector = true;
-                    fs.write((char *)&lba, sizeof(lba));
+                    fs.write((char *)&lba, 3);
                 }
                 fs.put(ExoErrorType::EDCError);
                 fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(sector->mode2.xa.form1.edc));
@@ -237,7 +236,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
                 if(!bad_sector)
                 {
                     bad_sector = true;
-                    fs.write((char *)&lba, sizeof(lba));
+                    fs.write((char *)&lba, 3);
                 }
                 fs.put(ExoErrorType::ECCError);
                 fs.write((char *)sector->mode2.xa.form1.ecc.p_parity, sizeof(sector->mode1.ecc.p_parity));
@@ -257,10 +256,10 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
     std::filesystem::path hash_path(image_prefix + ".hash");
     std::filesystem::path exo_path(image_prefix + ".exo");
 
-    if(!options.overwrite && (std::filesystem::exists(skeleton_path) || std::filesystem::exists(hash_path) || std::filesystem::exists(exo_path)))
+    if(!options.overwrite && (std::filesystem::exists(skeleton_path) || std::filesystem::exists(hash_path)))
         throw_line("skeleton/hash file already exists");
 
-    if(!iso && std::filesystem::exists(exo_path))
+    if(!options.overwrite && !iso && std::filesystem::exists(exo_path))
         throw_line("exo file already exists");
 
     std::unique_ptr<SectorReader> sector_reader;
@@ -340,7 +339,6 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
     if(!skeleton_fs.is_open())
         throw_line("unable to create file ({})", skeleton_path.filename().string());
 
-    std::vector<uint8_t> sector(iso ? FORM1_DATA_SIZE : CD_DATA_SIZE);
     std::fstream exo_fs;
     if(!iso)
     {
@@ -349,13 +347,13 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
             throw_line("unable to create file ({})", exo_path.filename().string());
 
         exo_fs.write((char *)EXO_MAGIC, sizeof(EXO_MAGIC));
-        exo_fs.write((char *)&EXO_VER, sizeof(EXO_VER));
-        exo_fs.write((char *)&sectors_count, sizeof(sectors_count));
-        uint32_t temp = (uint32_t)track_type;
-        exo_fs.write((char *)&temp, sizeof(temp));
+        exo_fs.write((char *)&sectors_count, 3);
+        exo_fs.write((char *)&track_type, sizeof(track_type));
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
     }
+
+    std::vector<uint8_t> sector(iso ? FORM1_DATA_SIZE : CD_DATA_SIZE);
     for(uint32_t s = 0; s < sectors_count; ++s)
     {
         progress_output(iso ? "creating skeleton" : "creating exo/skeleton", s, sectors_count);
@@ -366,7 +364,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
 
         if(!iso)
         {
-            write_exoskeleton(exo_fs, sector.data(), s, track_type);
+            write_cd_exoskeleton(exo_fs, sector.data(), s, track_type);
             if(exo_fs.fail())
                 throw_line("write failed ({})", exo_path.filename().string());
         }
@@ -377,7 +375,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         if(iso)
             skeleton_fs.write((char *)sector.data(), sector.size());
         else
-            write_skeleton_cd(skeleton_fs, sector.data());
+            write_cd_skeleton(skeleton_fs, sector.data());
         if(skeleton_fs.fail())
             throw_line("write failed ({})", skeleton_path.filename().string());
     }
