@@ -240,7 +240,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
     if(!options.overwrite && (std::filesystem::exists(skeleton_path) || std::filesystem::exists(hash_path) || std::filesystem::exists(exo_path)))
         throw_line("skeleton/hash file already exists");
 
-    if(!iso && std::filesystem::exists(exo_path)))
+    if(!iso && std::filesystem::exists(exo_path))
         throw_line("exo file already exists");
 
     std::unique_ptr<SectorReader> sector_reader;
