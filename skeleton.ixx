@@ -40,6 +40,18 @@ const uint32_t EXO_VER = 0;
 typedef std::tuple<std::string, uint32_t, uint32_t, uint32_t> ContentEntry;
 
 
+enum ExoErrorType : uint8_t
+{
+    SyncError = 1,
+    MSFError = 2,
+    ModeError = 3,
+    EDCError = 4,
+    IntermediateError = 5,
+    ECCError = 6,
+    SubheaderError = 7
+};
+
+
 void progress_output(std::string name, uint64_t value, uint64_t value_count)
 {
     char animation = value == value_count ? '*' : spinner_animation();
@@ -108,14 +120,14 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
 
     bool bad_sector = false;
 
-    if(memcmp(&sector->sync, CD_DATA_SYNC, sizeof(CD_DATA_SYNC)))
+    if(memcmp(&sector->sync, &CD_DATA_SYNC, sizeof(CD_DATA_SYNC)))
     {
         if(!bad_sector)
         {
             bad_sector = true;
             fs.write((char *)&lba, sizeof(lba));
         }
-        fs.put(0x01);
+        fs.put(ExoErrorType::SyncError);
         fs.write((char *)sector->sync, sizeof(sector->sync));
     }
 
@@ -127,7 +139,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
             bad_sector = true;
             fs.write((char *)&lba, sizeof(lba));
         }
-        fs.put(0x02);
+        fs.put(ExoErrorType::MSFError);
         fs.write((char *)sector->header.address.raw, sizeof(sector->header.address.raw));
     }
 
@@ -139,7 +151,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
             bad_sector = true;
             fs.write((char *)&lba, sizeof(lba));
         }
-        fs.put(0x03);
+        fs.put(ExoErrorType::ModeError);
         fs.write((char *)&sector->header.mode, sizeof(sector->header.mode));
     }
 
@@ -153,7 +165,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 bad_sector = true;
                 fs.write((char *)&lba, sizeof(lba));
             }
-            fs.put(0x06);
+            fs.put(ExoErrorType::ECCError);
             fs.write((char *)sector->mode1.ecc.p_parity, sizeof(sector->mode1.ecc.p_parity));
             fs.write((char *)sector->mode1.ecc.q_parity, sizeof(sector->mode1.ecc.q_parity));
         }
@@ -166,7 +178,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 bad_sector = true;
                 fs.write((char *)&lba, sizeof(lba));
             }
-            fs.put(0x04);
+            fs.put(ExoErrorType::EDCError);
             fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
             LOG("edc: 0x{:08X} (expected 0x{:08X})", edc, sector->mode1.edc);
         }
@@ -178,7 +190,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 bad_sector = true;
                 fs.write((char *)&lba, sizeof(lba));
             }
-            fs.put(0x05);
+            fs.put(ExoErrorType::IntermediateError);
             fs.write((char *)sector->mode1.intermediate, sizeof(sector->mode1.intermediate));
         }
     }
@@ -192,7 +204,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 bad_sector = true;
                 fs.write((char *)&lba, sizeof(lba));
             }
-            fs.put(0x07);
+            fs.put(ExoErrorType::SubheaderError);
             fs.write((char *)&sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header_copy));
         }
 
@@ -206,7 +218,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                     bad_sector = true;
                     fs.write((char *)&lba, sizeof(lba));
                 }
-                fs.put(0x04);
+                fs.put(ExoErrorType::EDCError);
                 fs.write((char *)&sector->mode2.xa.form2.edc, sizeof(sector->mode2.xa.form2.edc));
             }
         }
@@ -220,7 +232,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                     bad_sector = true;
                     fs.write((char *)&lba, sizeof(lba));
                 }
-                fs.put(0x04);
+                fs.put(ExoErrorType::EDCError);
                 fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(sector->mode2.xa.form1.edc));
             }
 
@@ -232,7 +244,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                     bad_sector = true;
                     fs.write((char *)&lba, sizeof(lba));
                 }
-                fs.put(0x06);
+                fs.put(ExoErrorType::ECCError);
                 fs.write((char *)sector->mode2.xa.form1.ecc.p_parity, sizeof(sector->mode1.ecc.p_parity));
                 fs.write((char *)sector->mode2.xa.form1.ecc.q_parity, sizeof(sector->mode1.ecc.q_parity));
             }
@@ -339,10 +351,10 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
             throw_line("unable to create file ({})", exo_path.filename().string());
 
         exo_fs.write((char *)EXO_MAGIC, sizeof(EXO_MAGIC));
-        exo_fs.write((char *)(&EXO_VER), sizeof(EXO_VER));
-        exo_fs.write((char *)(&sectors_count), sizeof(sectors_count));
+        exo_fs.write((char *)&EXO_VER, sizeof(EXO_VER));
+        exo_fs.write((char *)&sectors_count, sizeof(sectors_count));
         uint32_t track_type_full = (uint32_t)track_type;
-        exo_fs.write((char *)(&track_type_full), sizeof(track_type_full));
+        exo_fs.write((char *)&track_type_full, sizeof(track_type_full));
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
     }
