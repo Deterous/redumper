@@ -377,13 +377,14 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
 
         if(!iso)
         {
-            if(lba == 0 && track_type == TrackType::MODE2_2352)
+            if(s == 0 && track_type == TrackType::MODE2_2352)
             {
-                exo_fs.write((char *)&sector->mode2.xa.sub_header);
+                first_sector = (Sector *)sector;
+                exo_fs.write((char *)&sector->mode2.xa.sub_header, sizeof(sector->mode2.xa.sub_header));
                 subheader = sector->mode2.xa.sub_header;
             }
 
-            write_cd_exoskeleton(exo_fs, sector.data(), s, track_type, subheader);
+            write_cd_exoskeleton(exo_fs, sector.data(), s, track_type, &subheader);
             if(exo_fs.fail())
                 throw_line("write failed ({})", exo_path.filename().string());
         }
