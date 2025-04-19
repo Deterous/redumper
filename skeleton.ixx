@@ -230,9 +230,8 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
                 fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(sector->mode2.xa.form1.edc));
             }
 
-            Sector::Header header = sector.header;
-            std::fill_n((uint8_t *)&sector.header, sizeof(sector.header), 0);
-            Sector::ECC ecc(ECC().Generate((uint8_t *)&sector.header));
+            std::fill_n((uint8_t *)&sector->header, sizeof(sector->header), 0);
+            Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
             if(std::memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)) || std::memcmp(ecc.q_parity, sector->mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
             {
                 if(!bad_sector)
@@ -244,7 +243,6 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
                 fs.write((char *)sector->mode2.xa.form1.ecc.p_parity, sizeof(sector->mode1.ecc.p_parity));
                 fs.write((char *)sector->mode2.xa.form1.ecc.q_parity, sizeof(sector->mode1.ecc.q_parity));
             }
-            sector.header = header;
         }
     }
 
