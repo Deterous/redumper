@@ -379,9 +379,9 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         {
             if(s == 0 && track_type == TrackType::MODE2_2352)
             {
-                first_sector = (Sector *)sector;
-                exo_fs.write((char *)&sector->mode2.xa.sub_header, sizeof(sector->mode2.xa.sub_header));
-                subheader = sector->mode2.xa.sub_header;
+                auto first_sector = (Sector *)&sector;
+                exo_fs.write((char *)&first_sector->mode2.xa.sub_header, sizeof(first_sector->mode2.xa.sub_header));
+                subheader = first_sector->mode2.xa.sub_header;
             }
 
             write_cd_exoskeleton(exo_fs, sector.data(), s, track_type, &subheader);
