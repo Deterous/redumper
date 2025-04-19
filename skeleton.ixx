@@ -48,7 +48,8 @@ enum ExoErrorType : uint8_t
     EDCError = 4,
     IntermediateError = 5,
     ECCError = 6,
-    SubheaderError = 7
+    SubHeaderError = 7,
+    SubHeaderNew = 8
 };
 
 
@@ -109,7 +110,7 @@ void write_cd_skeleton(std::fstream &fs, uint8_t *s)
 }
 
 
-void write_cd_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType track_type)
+void write_cd_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType track_type, Sector::SubHeader &subheader)
 {
     auto sector = (Sector *)s;
     bool bad_sector = false;
@@ -189,7 +190,18 @@ void write_cd_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType 
     }
     else if(sector->header.mode == 2)
     {
-        // todo: calculate subheader
+        if(std::memcmp(&sector->mode2.xa.sub_header, &subheader, sizeof(sector->mode2.xa.sub_header)))
+        {
+            if(!bad_sector)
+            {
+                bad_sector = true;
+                fs.write((char *)&lba, 3);
+            }
+            fs.put(ExoErrorType::SubHeaderNew);
+            fs.write((char *)&sector->mode2.xa.sub_header, sizeof(sector->mode2.xa.sub_header));
+            subheader = sector->mode2.xa.sub_header;
+        }
+
         if(std::memcmp(&sector->mode2.xa.sub_header, &sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header)))
         {
             if(!bad_sector)
@@ -197,7 +209,7 @@ void write_cd_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType 
                 bad_sector = true;
                 fs.write((char *)&lba, 3);
             }
-            fs.put(ExoErrorType::SubheaderError);
+            fs.put(ExoErrorType::SubHeaderError);
             fs.write((char *)&sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header_copy));
         }
 
@@ -354,6 +366,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
     }
 
     std::vector<uint8_t> sector(iso ? FORM1_DATA_SIZE : CD_DATA_SIZE);
+    Sector::SubHeader subheader;
     for(uint32_t s = 0; s < sectors_count; ++s)
     {
         progress_output(iso ? "creating skeleton" : "creating exo/skeleton", s, sectors_count);
@@ -364,7 +377,13 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
 
         if(!iso)
         {
-            write_cd_exoskeleton(exo_fs, sector.data(), s, track_type);
+            if(lba == 0 && track_type == TrackType::MODE2_2352)
+            {
+                exo_fs.write((char *)&sector->mode2.xa.sub_header);
+                subheader = sector->mode2.xa.sub_header;
+            }
+
+            write_cd_exoskeleton(exo_fs, sector.data(), s, track_type, subheader);
             if(exo_fs.fail())
                 throw_line("write failed ({})", exo_path.filename().string());
         }
