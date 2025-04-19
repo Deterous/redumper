@@ -167,7 +167,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 fs.write((char *)&lba, sizeof(lba));
             }
             fs.put(0x04);
-            fs.write((char *)sector->mode1.edc, sizeof(sector->mode1.edc));
+            fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
             LOG("edc: 0x{:08X} (expected 0x{:08X})", edc, sector->mode1.edc);
         }
 
@@ -185,7 +185,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
     else if(sector->header.mode == 2)
     {
         // todo: calculate subheader
-        if(memcmp(sector->mode2.xa.sub_header, sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header)))
+        if(memcmp(&sector->mode2.xa.sub_header, sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header)))
         {
             if(!bad_sector)
             {
