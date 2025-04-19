@@ -375,7 +375,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
             erase_sector(sector.data(), iso);
 
         if(iso)
-            skeleton_fs.write(sector.data(), sector.size());
+            skeleton_fs.write((char *)sector.data(), sector.size());
         else
             write_skeleton_cd(skeleton_fs, sector.data());
         if(skeleton_fs.fail())
