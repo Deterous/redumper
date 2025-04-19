@@ -184,8 +184,8 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
             {
                 LOG("edc: 0x{:08X} (expected 0x{:08X})\n", edc, sector->mode1.edc);
                 LOG("sector:\n");
-                for(uint8_t value = 0; value < 2352; i++)
-                    LOG("{:08X}", data[i]);
+                for(uint32_t value = 0; value < 2352; value++)
+                    LOG("{:08X}", data[value]);
             }
         }
 
