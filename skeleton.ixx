@@ -230,7 +230,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
                 fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(sector->mode2.xa.form1.edc));
             }
 
-            Sector::ECC ecc(ECC().Generate((uint8_t *)&sector, true));
+            Sector::ECC ecc(ECC().Generate(sector, true));
             if(std::memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)) || std::memcmp(ecc.q_parity, sector->mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
             {
                 if(!bad_sector)
