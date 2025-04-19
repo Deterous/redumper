@@ -180,7 +180,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
             }
             fs.put(ExoErrorType::EDCError);
             fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
-            if(s == 0)
+            if(lba == 0)
             {
                 LOG("edc: 0x{:08X} (expected 0x{:08X})\n", edc, sector->mode1.edc);
                 LOG("sector:\n");
