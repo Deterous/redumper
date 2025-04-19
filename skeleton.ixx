@@ -94,23 +94,18 @@ void erase_sector(uint8_t *s, bool iso)
 }
 
 
-void write_skeleton(std::fstream &fs, uint8_t *s, bool iso)
+void write_skeleton_cd(std::fstream &fs, uint8_t *s)
 {
-    if(iso)
-        fs.write((char *)s, FORM1_DATA_SIZE);
-    else
-    {
-        auto sector = (Sector *)s;
+    auto sector = (Sector *)s;
 
-        if(sector->header.mode == 1)
-            fs.write((char *)sector->mode1.user_data, FORM1_DATA_SIZE);
-        else if(sector->header.mode == 2)
-        {
-            if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
-                fs.write((char *)sector->mode2.xa.form2.user_data, FORM2_DATA_SIZE);
-            else
-                fs.write((char *)sector->mode2.xa.form1.user_data, FORM1_DATA_SIZE);
-        }
+    if(sector->header.mode == 1)
+        fs.write((char *)sector->mode1.user_data, FORM1_DATA_SIZE);
+    else if(sector->header.mode == 2)
+    {
+        if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
+            fs.write((char *)sector->mode2.xa.form2.user_data, FORM2_DATA_SIZE);
+        else
+            fs.write((char *)sector->mode2.xa.form1.user_data, FORM1_DATA_SIZE);
     }
 }
 
@@ -118,10 +113,9 @@ void write_skeleton(std::fstream &fs, uint8_t *s, bool iso)
 void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType track_type)
 {
     auto sector = (Sector *)s;
-
     bool bad_sector = false;
 
-    if(memcmp(&sector->sync, &CD_DATA_SYNC, sizeof(CD_DATA_SYNC)))
+    if(std::memcmp(sector->sync, CD_DATA_SYNC, sizeof(CD_DATA_SYNC)))
     {
         if(!bad_sector)
         {
@@ -133,7 +127,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
     }
 
     MSF msf = LBA_to_BCDMSF(lba);
-    if(memcmp(&sector->header.address.raw, msf.raw, sizeof(sector->header.address.raw)))
+    if(std::memcmp(sector->header.address.raw, msf.raw, sizeof(msf.raw)))
     {
         if(!bad_sector)
         {
@@ -145,7 +139,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
     }
 
     uint8_t mode_byte = track_type == TrackType::MODE1_2352 ? 0x01 : track_type == TrackType::MODE2_2352 ? 0x02 : 0x00;
-    if(memcmp(&sector->header.mode, &mode_byte, sizeof(mode_byte)))
+    if(sector->header.mode != mode_byte)
     {
         if(!bad_sector)
         {
@@ -153,12 +147,12 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
             fs.write((char *)&lba, sizeof(lba));
         }
         fs.put(ExoErrorType::ModeError);
-        fs.write((char *)&sector->header.mode, sizeof(sector->header.mode));
+        fs.put(sector->header.mode);
     }
 
     if(sector->header.mode == 1)
     {
-        uint32_t edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
+        uint32_t edc = EDC().update((uint8_t *)sector, offsetof(Sector, mode1.edc)).final();
         if(sector->mode1.edc != edc)
         {
             if(!bad_sector)
@@ -170,7 +164,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
             fs.write((char *)&sector->mode1.edc, sizeof(sector->mode1.edc));
         }
 
-        if(memcmp(&sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
+        if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
         {
             if(!bad_sector)
             {
@@ -182,7 +176,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
         }
 
         Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
-        if(memcmp(ecc.p_parity, sector->mode1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector->mode1.ecc.q_parity, sizeof(ecc.q_parity)))
+        if(std::memcmp(ecc.p_parity, sector->mode1.ecc.p_parity, sizeof(ecc.p_parity)) || std::memcmp(ecc.q_parity, sector->mode1.ecc.q_parity, sizeof(ecc.q_parity)))
         {
             if(!bad_sector)
             {
@@ -197,7 +191,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
     else if(sector->header.mode == 2)
     {
         // todo: calculate subheader
-        if(memcmp(&sector->mode2.xa.sub_header, &sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header)))
+        if(std::memcmp(sector->mode2.xa.sub_header, &sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header)))
         {
             if(!bad_sector)
             {
@@ -237,7 +231,7 @@ void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType tra
             }
 
             Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
-            if(memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector->mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
+            if(std::memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)) || std::memcmp(ecc.q_parity, sector->mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
             {
                 if(!bad_sector)
                 {
@@ -379,7 +373,10 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         if(inside_contents(contents, s))
             erase_sector(sector.data(), iso);
 
-        write_skeleton(skeleton_fs, sector.data(), iso);
+        if(iso)
+            skeleton_fs.write((char *)s, FORM1_DATA_SIZE);
+        else
+            write_skeleton_cd(skeleton_fs, sector.data());
         if(skeleton_fs.fail())
             throw_line("write failed ({})", skeleton_path.filename().string());
     }
