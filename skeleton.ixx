@@ -157,7 +157,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
 
     if(sector->header.mode == 1)
     {
-        uint32_t edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
+        uint32_t edc = EDC().update(&sector, offsetof(Sector, mode1.edc)).final();
         if(sector->mode1.edc != edc)
         {
             if(!bad_sector)
@@ -242,7 +242,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 fs.write((char *)&sector->mode2.xa.form1.edc, sizeof(sector->mode2.xa.form1.edc));
             }
 
-            Sector::ECC ecc(ECC().Generate((uint8_t *)&sector->header));
+            Sector::ECC ecc(ECC().Generate(&sector->header));
             if(memcmp(ecc.p_parity, sector->mode2.xa.form1.ecc.p_parity, sizeof(ecc.p_parity)) || memcmp(ecc.q_parity, sector->mode2.xa.form1.ecc.q_parity, sizeof(ecc.q_parity)))
             {
                 if(!bad_sector)
