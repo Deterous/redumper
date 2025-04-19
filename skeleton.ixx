@@ -108,7 +108,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
 
     bool bad_sector = false;
 
-    if(std::memcmp(sector->sync, CD_DATA_SYNC, sizeof(CD_DATA_SYNC)))
+    if(memcmp(&sector->sync, CD_DATA_SYNC, sizeof(CD_DATA_SYNC)))
     {
         if(!bad_sector)
         {
@@ -120,7 +120,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
     }
 
     MSF msf = LBA_to_BCDMSF(lba);
-    if(std::memcmp(sector->header.address.raw, msf.raw, sizeof(sector->header.address.raw)))
+    if(memcmp(&sector->header.address.raw, msf.raw, sizeof(sector->header.address.raw)))
     {
         if(!bad_sector)
         {
@@ -132,7 +132,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
     }
 
     uint8_t mode_byte = track_type == TrackType::MODE1_2352 ? 0x01 : track_type == TrackType::MODE2_2352 ? 0x02 : 0x00;
-    if(std::memcmp(&sector->header.mode, &mode_byte, sizeof(mode_byte)))
+    if(memcmp(&sector->header.mode, &mode_byte, sizeof(mode_byte)))
     {
         if(!bad_sector)
         {
@@ -159,7 +159,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
         }
 
         uint32_t edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
-        if(sector.mode1.edc != edc)
+        if(sector->mode1.edc != edc)
         {
             if(!bad_sector)
             {
@@ -167,11 +167,11 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 fs.write((char *)&lba, sizeof(lba));
             }
             fs.put(0x04);
-            fs.write((char *)sector.mode1.edc, sizeof(sector.mode1.edc));
-            LOG("edc: 0x{:08X} (expected 0x{:08X})", edc, sector.mode1.edc);
+            fs.write((char *)sector->mode1.edc, sizeof(sector->mode1.edc));
+            LOG("edc: 0x{:08X} (expected 0x{:08X})", edc, sector->mode1.edc);
         }
 
-        if(std::memcmp(sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
+        if(memcmp(&sector->mode1.intermediate, CD_DATA_INTERMEDIATE, sizeof(CD_DATA_INTERMEDIATE)))
         {
             if(!bad_sector)
             {
@@ -193,7 +193,7 @@ void write_exo(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, Track
                 fs.write((char *)&lba, sizeof(lba));
             }
             fs.put(0x07);
-            fs.write((char *)sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header_copy));
+            fs.write((char *)&sector->mode2.xa.sub_header_copy, sizeof(sector->mode2.xa.sub_header_copy));
         }
 
         if(sector->mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
