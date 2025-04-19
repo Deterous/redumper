@@ -115,9 +115,9 @@ void write_skeleton(std::fstream &fs, uint8_t *s, bool iso)
 }
 
 
-void write_exoskeleton(std::fstream &fs, std::vector<uint8_t> &data, uint32_t lba, TrackType track_type)
+void write_exoskeleton(std::fstream &fs, uint8_t *s, uint32_t lba, TrackType track_type)
 {
-    auto sector = (Sector *)data.data();
+    auto sector = (Sector *)s;
 
     bool bad_sector = false;
 
@@ -356,8 +356,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
         exo_fs.write((char *)EXO_MAGIC, sizeof(EXO_MAGIC));
         exo_fs.write((char *)&EXO_VER, sizeof(EXO_VER));
         exo_fs.write((char *)&sectors_count, sizeof(sectors_count));
-        uint32_t track_type_full = (uint32_t)track_type;
-        exo_fs.write((char *)&track_type_full, sizeof(track_type_full));
+        exo_fs.write((char *)&(uint32_t)track_type, sizeof(uint32_t));
         if(exo_fs.fail())
             throw_line("write failed ({})", exo_path.filename().string());
     }
@@ -371,7 +370,7 @@ void skeleton(const std::string &image_prefix, const std::string &image_path, bo
 
         if(!iso)
         {
-            write_exoskeleton(exo_fs, sector, s, track_type);
+            write_exoskeleton(exo_fs, sector.data(), s, track_type);
             if(exo_fs.fail())
                 throw_line("write failed ({})", exo_path.filename().string());
         }
