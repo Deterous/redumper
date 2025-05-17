@@ -143,13 +143,13 @@ std::vector<Area> area_map(SectorReader *sector_reader, uint32_t base_offset, ui
             {
                 // if invalid PDN, use last good record as parent
                 name = names.back() + "/" + identifier;
-                LOG("PRN({}): {}", pr.parent_directory_number, name)
+                LOG("PRN({}): {}", pr.parent_directory_number, name);
             }
             else if(i)
             {
                 name = names[pr.parent_directory_number - 1] + "/" + identifier;
                 names.push_back(name);
-                LOG("PRN({}): {}", pr.parent_directory_number, name)
+                LOG("PRN({}): {}", pr.parent_directory_number, name);
             }
 
             i += round_up(pr.length, (uint8_t)2) + pr.xa_length;
