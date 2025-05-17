@@ -138,9 +138,9 @@ std::vector<Area> area_map(SectorReader *sector_reader, uint32_t base_offset, ui
             std::string identifier((const char *)&path_table[i], pr.length);
             if(identifier == std::string(1, (char)iso9660::Characters::DIR_CURRENT))
                 identifier.clear();
-            std::string name = "";
-            if(pr.parent_directory_number == 1)
-                name = "";
+            std::string name;
+            if(pr.parent_directory_number == 1 || i == 0)
+                name = "/" + identifier;
             else if(pr.parent_directory_number == 0 || pr.parent_directory_number > names.size())
                 name = names.back() + "/" + identifier;
             else
