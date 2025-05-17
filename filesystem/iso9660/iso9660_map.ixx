@@ -142,7 +142,7 @@ std::vector<Area> area_map(SectorReader *sector_reader, uint32_t base_offset, ui
             if(pr.parent_directory_number == 1 || i == 0)
                 name = "/" + identifier;
             else if(pr.parent_directory_number == 0 || pr.parent_directory_number > names.size())
-                name = names.back() + "/" + identifier;
+                name = "/" + identifier;
             else
                 name = names[pr.parent_directory_number - 1] + "/" + identifier;
             names.push_back(name);
