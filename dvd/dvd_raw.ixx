@@ -1,21 +1,33 @@
 module;
 #include <cstdint>
+#include <filesystem>
+#include <fstream>
+#include <vector>
+#include "throw_line.hh"
 
 export module dvd.raw;
 
 import cd.cdrom;
+import common;
+import drive.mediatek;
+import options;
+import scsi.sptd;
+import utils.file_io;
 
 
 
 namespace gpsxre
 {
 
-export const uint32_t PSN_START = 0x30000;
-export const uint32_t DATA_FRAME_SIZE = 2064;
-export const uint32_t RECORDING_FRAME_SIZE = 2366;
+
+// .raw LBA 0 starts at 0x1BBA0000 byte offset
+constexpr uint32_t DVD_LBA_START = -0x30000;
+constexpr uint32_t DATA_FRAME_SIZE = 2064;
+constexpr uint32_t RECORDING_FRAME_SIZE = 2366;
+constexpr uint32_t MEDIATEK_CACHE_SIZE = 2384;
 
 
-export struct DataFrame
+struct DataFrame
 {
     struct
     {
@@ -40,7 +52,7 @@ export struct DataFrame
 };
 
 
-export struct NintendoDataFrame
+struct NintendoDataFrame
 {
     struct
     {
@@ -65,7 +77,7 @@ export struct NintendoDataFrame
 };
 
 
-export struct RecordingFrame
+struct RecordingFrame
 {
     struct Row
     {
@@ -78,10 +90,44 @@ export struct RecordingFrame
 };
 
 
-export struct CacheFrame2384
+struct MediatekCacheFrame
 {
     RecordingFrame recording_frame;
     uint8_t unknown[18];
 };
+
+
+std::vector<uint8_t> mediatek_dvd_cache_extract(const std::vector<uint8_t> &cache, int32_t lba)
+{
+    std::vector<uint8_t> data;
+
+    // detect and return unique frame by ID and validate it using IED
+    // check first 4 bytes of each MEDIATEK_CACHE_SIZE frame
+    // if there are two frames with validated IDs, check prior/next frame is valid and adjacent number
+
+    return data;
+}
+
+
+void mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, Options &options)
+{
+    std::vector<uint8_t> cache;
+
+    //status = asus_cache_read(*ctx.sptd, cache, 1024 * 1024 * asus_get_config(ctx.drive_config.type).size_mb);
+    //if(status.status_code)
+    //    throw_line("read cache failed, SCSI ({})", SPTD::StatusMessage(status));
+
+    cache = mediatek_dvd_cache_extract(cache, lba, LEADOUT_OVERREAD_COUNT, ctx.drive_config.type);
+
+    //write_entry(fs_raw, file_data.data(), RECORDING_FRAME_SIZE, lba - DVD_LBA_START, sectors_read, 0);
+    //write_entry(fs_state, (uint8_t *)file_state.data(), sizeof(State), lba - DVD_LBA_START, sectors_read, 0);
+}
+
+void read_raw_dvd(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, Options &options)
+{
+    if(drive_is_asus(ctx.drive_config))
+        mediatek_dvd_cache(ctx, fs_iso, fs_state, options);
+    //else if ()
+}
 
 }
