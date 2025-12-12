@@ -109,7 +109,7 @@ std::vector<uint8_t> mediatek_dvd_cache_extract(const std::vector<uint8_t> &cach
 }
 
 
-void mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, Options &options)
+void mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options)
 {
     std::vector<uint8_t> cache;
 
@@ -123,7 +123,8 @@ void mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_sta
     // write_entry(fs_state, (uint8_t *)file_state.data(), sizeof(State), lba - DVD_LBA_START, sectors_read, 0);
 }
 
-void read_raw_dvd(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, Options &options)
+
+export void read_raw_dvd(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options)
 {
     if(drive_is_asus(ctx.drive_config))
         mediatek_dvd_cache(ctx, fs_raw, fs_state, options);
