@@ -902,8 +902,8 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                 }
                 else
                     store = true;
-                
-                if (options.raw_dvd)
+
+                if(options.raw_dvd)
                     read_raw_dvd(ctx, fs_raw, fs_state, options);
             }
 
