@@ -292,14 +292,14 @@ bool check_for_pid(const TOC::Session::Track &t, std::fstream &scm_fs, std::shar
     if(t.track_number <= 1)
         return false;
     std::vector<uint8_t> sector(CD_DATA_SIZE);
-    for(int32_t lba = t.lba_start; lba < lba_end; ++lba)
+    for(int32_t lba = t.lba_start; lba < t.lba_end; ++lba)
     {
         read_entry(scm_fs, sector.data(), CD_DATA_SIZE, lba - LBA_START, 1, -offset_manager->getOffset(lba) * CD_SAMPLE_SIZE, 0);
         Sector &s = *(Sector *)sector.data();
         if(lba >= t.lba_start + 150 && lba <= t.lba_end - 150)
         {
             // middle 300 sectors must look like dummy pattern (usually 5-15 mismatches)
-            auto mismatches = std::count_if(s.mode2.xa.form2.user_data, s.mode2.xa.form2.user_data + FORM2_DATA_SIZE, [i = data](auto v) mutable { return v != PID_DUMMY_PATTERN[i++]; });
+            auto mismatches = std::count_if(s.mode2.xa.form2.user_data, s.mode2.xa.form2.user_data + FORM2_DATA_SIZE, [i = s.mode2.xa.form2.user_data](auto v) mutable { return v != PID_DUMMY_PATTERN[i++]; });
             if(mismatches > 25)
                 return false;
         }
@@ -311,7 +311,7 @@ bool check_for_pid(const TOC::Session::Track &t, std::fstream &scm_fs, std::shar
                 if(!is_zeroed(s.mode1.user_data, FORM1_DATA_SIZE))
                     return false;
             }
-            else if(sector.mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
+            else if(s.mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
             {
                 if(!is_zeroed(s.mode2.xa.form2.user_data, FORM2_DATA_SIZE))
                     return false;
