@@ -299,7 +299,8 @@ bool check_for_pid(const TOC::Session::Track &t, std::fstream &scm_fs, std::shar
         if(lba >= t.lba_start + 150 && lba <= t.lba_end - 150)
         {
             // middle 300 sectors must look like dummy pattern (usually 5-15 mismatches)
-            auto mismatches = std::count_if(s.mode2.xa.form2.user_data, s.mode2.xa.form2.user_data + FORM2_DATA_SIZE, [i = s.mode2.xa.form2.user_data](auto v) mutable { return v != PID_DUMMY_PATTERN[i++]; });
+            auto mismatches =
+                std::count_if(s.mode2.xa.form2.user_data, s.mode2.xa.form2.user_data + FORM2_DATA_SIZE, [i = s.mode2.xa.form2.user_data](auto v) mutable { return v != PID_DUMMY_PATTERN[i++]; });
             if(mismatches > 25)
                 return false;
         }
