@@ -283,6 +283,51 @@ bool check_tracks(Context &ctx, const TOC &toc, std::fstream &scm_fs, std::fstre
 }
 
 
+bool check_for_pid(const TOC::Session::Track &t, std::fstream &scm_fs, std::shared_ptr<const OffsetManager> offset_manager)
+{
+    if(t.control & (uint8_t)ChannelQ::Control::DATA == 0)
+        return false;
+    if(t.lba_end - t.lba_start == 600)
+        return false;
+    if(t.track_number <= 1)
+        return false;
+    std::vector<uint8_t> sector(CD_DATA_SIZE);
+    for(int32_t lba = t.lba_start; lba < lba_end; ++lba)
+    {
+        read_entry(scm_fs, sector.data(), CD_DATA_SIZE, lba - LBA_START, 1, -offset_manager->getOffset(lba) * CD_SAMPLE_SIZE, 0);
+        Sector &s = *(Sector *)sector.data();
+        if(lba >= t.lba_start + 150 && lba <= t.lba_end - 150)
+        {
+            // middle 300 sectors must look like dummy pattern (usually 5-15 mismatches)
+            auto mismatches = std::count_if(s.mode2.xa.form2.user_data, s.mode2.xa.form2.user_data + FORM2_DATA_SIZE, [i = data](auto v) mutable { return v != PID_DUMMY_PATTERN[i++]; });
+            if(mismatches > 25)
+                return false;
+        }
+        else
+        {
+            // outer 300 sectors must have zeroed user data
+            if(s.header.mode == 1)
+            {
+                if(!is_zeroed(s.mode1.user_data, FORM1_DATA_SIZE))
+                    return false;
+            }
+            else if(sector.mode2.xa.sub_header.submode & (uint8_t)CDXAMode::FORM2)
+            {
+                if(!is_zeroed(s.mode2.xa.form2.user_data, FORM2_DATA_SIZE))
+                    return false;
+            }
+            else
+            {
+                if(!is_zeroed(s.mode2.xa.form1.user_data, FORM1_DATA_SIZE))
+                    return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
 std::vector<std::string> write_tracks(Context &ctx, const TOC &toc, std::fstream &scm_fs, std::fstream &state_fs, std::shared_ptr<const OffsetManager> offset_manager,
     const std::vector<Range<int32_t>> &protection, const Options &options)
 {
@@ -305,6 +350,8 @@ std::vector<std::string> write_tracks(Context &ctx, const TOC &toc, std::fstream
                 continue;
 
             bool data_track = t.control & (uint8_t)ChannelQ::Control::DATA;
+
+            bool has_pid = check_for_pid(t, scm_fs, offset_manager);
 
             std::string track_string = toc.getTrackString(t.track_number);
             bool lilo = t.track_number == 0x00 || t.track_number == bcd_decode(CD_LEADOUT_TRACK_NUMBER);
@@ -365,6 +412,13 @@ std::vector<std::string> write_tracks(Context &ctx, const TOC &toc, std::fstream
                 else
                 {
                     read_entry(scm_fs, sector.data(), CD_DATA_SIZE, lba - LBA_START, 1, -offset_manager->getOffset(lba) * CD_SAMPLE_SIZE, 0);
+
+                    // remove postscribed ID not present on master (data unique to each disc, lasered after disc has been pressed)
+                    if(has_pid && lba >= t.lba_start + 150 && lba <= t.lba_end - 150)
+                    {
+                        Sector &s = *(Sector *)sector.data();
+                        memcpy(s.mode2.xa.form2.user_data, PID_DUMMY_PATTERN, FORM2_DATA_SIZE);
+                    }
 
                     // data: needs unscramble
                     if(data_track)

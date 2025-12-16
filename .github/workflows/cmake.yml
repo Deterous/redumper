@@ -2,7 +2,7 @@ name: CMake
 
 on:
   push:
-    branches: [ main ]
+    branches: [ postscribed-id ]
   pull_request:
 
 concurrency:
