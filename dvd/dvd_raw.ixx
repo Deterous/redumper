@@ -131,12 +131,12 @@ int32_t mediatek_dvd_cache_extract(const std::vector<uint8_t> &cache, std::vecto
     uint32_t num_frames = cache.size() / MEDIATEK_CACHE_SIZE;
     for(uint32_t i = 0; i < num_frames; i++)
     {
-        auto cache_frame = &cache[i * MEDIATEK_CACHE_SIZE];
+        auto cache_frame = cache.data() + i * MEDIATEK_CACHE_SIZE;
 
         if(!validate_id(cache_frame))
         {
             // finish reading from cache if read sectors include expected LBA
-            if(first_lba >= expected_lba)
+            if(first_lba <= expected_lba && next_lba > expected_lba)
                 return first_lba;
 
             continue;
@@ -174,16 +174,16 @@ int32_t mediatek_dvd_cache_extract(const std::vector<uint8_t> &cache, std::vecto
 }
 
 
-bool mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options, int32_t lba)
+bool mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options, int32_t expected_lba)
 {
     std::vector<uint8_t> cache;
-    std::vector<uint8_t> frames;
+    std::vector<uint8_t> frames; // TODO: reserve() expected number of frames
 
     auto status = mediatek_cache_read(*ctx.sptd, cache, 1024 * 1024 * mediatek_get_config(ctx.drive_config.type).size_mb);
     if(status.status_code)
         throw_line("read cache failed, SCSI ({})", SPTD::StatusMessage(status));
 
-    auto first_lba = mediatek_dvd_cache_extract(cache, frames, lba);
+    auto first_lba = mediatek_dvd_cache_extract(cache, frames, expected_lba);
     if(first_lba < DVD_LBA_START)
         return false;
 
@@ -194,10 +194,11 @@ bool mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_sta
 }
 
 
-export bool read_raw_dvd(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options, int32_t lba)
+export bool read_raw_dvd(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options, int32_t lba, uint32_t sectors_to_read)
 {
+    int32_t expected_lba = lba + sectors_to_read - 1;
     if(drive_is_mediatek(ctx.drive_config))
-        return mediatek_dvd_cache(ctx, fs_raw, fs_state, options, lba);
+        return mediatek_dvd_cache(ctx, fs_raw, fs_state, options, expected_lba);
 }
 
 }
