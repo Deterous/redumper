@@ -134,7 +134,7 @@ void mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_sta
     std::vector<uint8_t> cache;
     std::vector<uint8_t> frames;
 
-    auto status = asus_cache_read(*ctx.sptd, cache, 1024 * 1024 * asus_get_config(ctx.drive_config.type).size_mb);
+    auto status = mediatek_cache_read(*ctx.sptd, cache, 1024 * 1024 * mediatek_get_config(ctx.drive_config.type).size_mb);
     if(status.status_code)
         throw_line("read cache failed, SCSI ({})", SPTD::StatusMessage(status));
 
@@ -150,7 +150,7 @@ void mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_sta
 
 export void read_raw_dvd(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options, int32_t lba)
 {
-    if(drive_is_asus(ctx.drive_config))
+    if(drive_is_mediatek(ctx.drive_config))
         mediatek_dvd_cache(ctx, fs_raw, fs_state, options, lba);
 }
 
