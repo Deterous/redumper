@@ -46,7 +46,7 @@ struct IdentificationData
 
     int32_t lba() const
     {
-        return (int32_t)((uint32_t(sector_number[2]) << 16) | (uint32_t(sector_number[1]) << 8) |  uint32_t(sector_number[0]));
+        return (int32_t)((uint32_t(sector_number[2]) << 16) | (uint32_t(sector_number[1]) << 8) | uint32_t(sector_number[0]));
     }
 };
 
@@ -136,7 +136,7 @@ int32_t mediatek_dvd_cache_extract(const std::vector<uint8_t> &cache, std::vecto
         if(!validate_id(cache_frame))
         {
             // finish reading from cache if read sectors include expected LBA
-            if (first_lba >= expected_lba)
+            if(first_lba >= expected_lba)
                 return first_lba;
 
             continue;
@@ -184,7 +184,7 @@ bool mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_sta
         throw_line("read cache failed, SCSI ({})", SPTD::StatusMessage(status));
 
     auto first_lba = mediatek_dvd_cache_extract(cache, frames, lba);
-    if (first_lba < DVD_LBA_START)
+    if(first_lba < DVD_LBA_START)
         return false;
 
     int sectors_read = frames.size() / RECORDING_FRAME_SIZE;
