@@ -22,9 +22,9 @@ namespace gpsxre
 
 
 // .raw LBA 0 starts at 0x1BBA0000 byte offset
-constexpr uint32_t DVD_LBA_START = -0x30000;
-constexpr uint32_t DATA_FRAME_SIZE = 2064;
-constexpr uint32_t RECORDING_FRAME_SIZE = 2366;
+export constexpr uint32_t DVD_LBA_START = -0x30000;
+export constexpr uint32_t DATA_FRAME_SIZE = 2064;
+export constexpr uint32_t RECORDING_FRAME_SIZE = 2366;
 constexpr uint32_t MEDIATEK_CACHE_SIZE = 2384;
 
 

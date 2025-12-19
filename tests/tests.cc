@@ -260,7 +260,7 @@ bool test_crc()
         success = false;
 
     // CRC-32/CD-ROM-EDC
-    auto edc = CD_EDC().update((uint8_t *)check_value.data(), check_value.length()).final();
+    auto edc = EDC().update((uint8_t *)check_value.data(), check_value.length()).final();
     auto edc_match = edc == 0x6EC2EDC4;
     std::cout << std::format("CD EDC: 0x{:08X}, {}", edc, edc_match ? "success" : "failure") << std::endl;
     if(!edc_match)
