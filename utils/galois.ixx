@@ -37,7 +37,7 @@ export struct GF256
     }
 
     // add a + b in GF(2^8)
-    uint8_t add(uint8_t a, uint8_t b)
+    uint8_t add(uint8_t a, uint8_t b) const
     {
         return a ^ b;
     }

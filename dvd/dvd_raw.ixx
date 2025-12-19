@@ -43,6 +43,11 @@ struct IdentificationData
     } sector_info;
 
     uint8_t sector_number[3];
+
+    int32_t lba() const
+    {
+        return (int32_t)((uint32_t(sector_number[2]) << 16) | (uint32_t(sector_number[1]) << 8) |  uint32_t(sector_number[0]));
+    }
 };
 
 struct DataFrame
@@ -85,7 +90,7 @@ struct MediatekCacheFrame
 };
 
 
-uint16_t compute_ied(const uint8_t id[4])
+bool validate_id(const uint8_t id[6])
 {
     // primitive polynomial x^8 + x^4 + x^3 + x^2 + 1
     static GF256 gf(0x11D); // 100011101
@@ -111,25 +116,65 @@ uint16_t compute_ied(const uint8_t id[4])
         }
     }
 
-    return ((uint16_t)poly[4] << 8) | (uint16_t)poly[5];
+    return (poly[4] == id[4]) && (poly[5] == id[5]);
 }
 
 
-int32_t mediatek_dvd_cache_extract(const std::vector<uint8_t> &cache, const std::vector<uint8_t> &frames, int32_t lba)
+int32_t mediatek_dvd_cache_extract(const std::vector<uint8_t> &cache, std::vector<uint8_t> &frames, int32_t expected_lba)
 {
-    // look for sectors with ID near lba
-    // detect and return unique frame by ID and validate it using IED
-    // check first 4 bytes of each MEDIATEK_CACHE_SIZE frame
-    // if there are two frames with validated IDs, check prior/next frame is valid and adjacent number
+    int32_t first_lba = DVD_LBA_START - 1;
+    int32_t next_lba = DVD_LBA_START;
 
-    // validate sector ID
-    //(IdentificationData)
+    if(cache.size() < MEDIATEK_CACHE_SIZE)
+        return first_lba;
 
-    return 0;
+    uint32_t num_frames = cache.size() / MEDIATEK_CACHE_SIZE;
+    for(uint32_t i = 0; i < num_frames; i++)
+    {
+        auto cache_frame = &cache[i * MEDIATEK_CACHE_SIZE];
+
+        if(!validate_id(cache_frame))
+        {
+            // finish reading from cache if read sectors include expected LBA
+            if (first_lba >= expected_lba)
+                return first_lba;
+
+            continue;
+        }
+
+        auto id = (IdentificationData *)cache_frame;
+        int32_t lba = id->lba();
+
+        if(next_lba == DVD_LBA_START)
+        {
+            if(lba < expected_lba - 100 || lba > expected_lba)
+                continue;
+
+            first_lba = lba;
+            next_lba = lba + 1;
+        }
+        else if(lba != next_lba)
+        {
+            if(lba <= expected_lba)
+            {
+                first_lba = lba;
+                next_lba = lba + 1;
+                frames.clear();
+            }
+            else
+                return first_lba;
+        }
+        else
+            next_lba++;
+
+        frames.insert(frames.end(), cache_frame, cache_frame + RECORDING_FRAME_SIZE);
+    }
+
+    return first_lba;
 }
 
 
-void mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options, int32_t lba)
+bool mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options, int32_t lba)
 {
     std::vector<uint8_t> cache;
     std::vector<uint8_t> frames;
@@ -139,19 +184,20 @@ void mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_sta
         throw_line("read cache failed, SCSI ({})", SPTD::StatusMessage(status));
 
     auto first_lba = mediatek_dvd_cache_extract(cache, frames, lba);
-    int sectors_read = cache.size() / RECORDING_FRAME_SIZE;
+    if (first_lba < DVD_LBA_START)
+        return false;
 
+    int sectors_read = frames.size() / RECORDING_FRAME_SIZE;
     write_entry(fs_raw, frames.data(), RECORDING_FRAME_SIZE, first_lba - DVD_LBA_START, sectors_read, 0);
 
-    // TODO: How to store raw state in state file?
-    // write_entry(fs_state, (uint8_t *)file_state.data(), sizeof(State), first_lba - DVD_LBA_START, sectors_read, 0);
+    return true;
 }
 
 
-export void read_raw_dvd(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options, int32_t lba)
+export bool read_raw_dvd(Context &ctx, std::fstream &fs_raw, std::fstream &fs_state, const Options &options, int32_t lba)
 {
     if(drive_is_mediatek(ctx.drive_config))
-        mediatek_dvd_cache(ctx, fs_raw, fs_state, options, lba);
+        return mediatek_dvd_cache(ctx, fs_raw, fs_state, options, lba);
 }
 
 }
