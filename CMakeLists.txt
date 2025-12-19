@@ -113,6 +113,7 @@ target_sources(redumper
     "drive/mediatek.ixx"
     "drive/test.ixx"
     "dvd/dvd_dump.ixx"
+    "dvd/dvd_edc.ixx"
     "dvd/dvd_key.ixx"
     "dvd/dvd_raw.ixx"
     "dvd/dvd_split.ixx"

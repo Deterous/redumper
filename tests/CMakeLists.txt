@@ -18,6 +18,7 @@ target_sources(tests
         "${CMAKE_SOURCE_DIR}/crc/crc.ixx"
         "${CMAKE_SOURCE_DIR}/crc/crc16_gsm.ixx"
         "${CMAKE_SOURCE_DIR}/crc/crc32.ixx"
+        "${CMAKE_SOURCE_DIR}/dvd/dvd_edc.ixx"
         "${CMAKE_SOURCE_DIR}/utils/file_io.ixx"
         "${CMAKE_SOURCE_DIR}/utils/misc.ixx"
         "${CMAKE_SOURCE_DIR}/utils/strings.ixx"
