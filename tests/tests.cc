@@ -269,7 +269,7 @@ bool test_crc()
     // CRC-32/DVD-EDC
     auto dvd_edc = DVD_EDC().update((uint8_t *)check_value.data(), check_value.length()).final();
     auto dvd_edc_match = dvd_edc == 0xB27CE117;
-    std::cout << std::format("DVD EDC: 0x{:08X}, {}", edc, edc_match ? "success" : "failure") << std::endl;
+    std::cout << std::format("DVD EDC: 0x{:08X}, {}", dvd_edc, dvd_edc_match ? "success" : "failure") << std::endl;
     if(!dvd_edc_match)
         success = false;
 
