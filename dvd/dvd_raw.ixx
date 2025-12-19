@@ -108,7 +108,7 @@ uint16_t compute_ied(const uint8_t id[4])
     uint8_t g2 = gf.exp[1];            // alpha0 * alpha1
 
     // initialize coefficients
-    uint8_t poly[6] = {0};
+    uint8_t poly[6] = { 0 };
     for(uint8_t i = 0; i < 4; ++i)
         poly[i] = id[i];
 
