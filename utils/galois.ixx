@@ -8,7 +8,7 @@ export module utils.galois;
 namespace gpsxre
 {
 
-struct GF256
+export struct GF256
 {
     uint8_t exp[512];
     int32_t log[256];

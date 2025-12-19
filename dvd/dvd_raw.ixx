@@ -28,24 +28,26 @@ constexpr uint32_t RECORDING_FRAME_SIZE = 2366;
 constexpr uint32_t MEDIATEK_CACHE_SIZE = 2384;
 
 
-struct DataFrame
+
+struct IdentificationData
 {
     struct
     {
-        struct
-        {
-            uint8_t layer_number       :1;
-            uint8_t data_type          :1;
-            uint8_t zone_type          :2;
-            uint8_t reserved           :1;
-            uint8_t reflectivity       :1;
-            uint8_t tracking_method    :1;
-            uint8_t sector_format_type :1;
-        } sector_info;
+        uint8_t layer_number       :1;
+        uint8_t data_type          :1;
+        uint8_t zone_type          :2;
+        uint8_t reserved           :1;
+        uint8_t reflectivity       :1;
+        uint8_t tracking_method    :1;
+        uint8_t sector_format_type :1;
+    } sector_info;
 
-        uint8_t sector_number[3];
-    } id;
+    uint8_t sector_number[3];
+};
 
+struct DataFrame
+{
+    IdentificationData id;
     uint16_t ied;
     uint8_t cpr_mai[6];
     uint8_t user_data[FORM1_DATA_SIZE];
@@ -55,22 +57,7 @@ struct DataFrame
 
 struct NintendoDataFrame
 {
-    struct
-    {
-        struct
-        {
-            uint8_t layer_number       :1;
-            uint8_t data_type          :1;
-            uint8_t zone_type          :2;
-            uint8_t reserved           :1;
-            uint8_t reflectivity       :1;
-            uint8_t tracking_method    :1;
-            uint8_t sector_format_type :1;
-        } sector_info;
-
-        uint8_t sector_number[3];
-    } id;
-
+    IdentificationData id;
     uint16_t ied;
     uint8_t user_data[FORM1_DATA_SIZE];
     uint8_t cpr_mai[6];
@@ -134,6 +121,9 @@ int32_t mediatek_dvd_cache_extract(const std::vector<uint8_t> &cache, const std:
     // detect and return unique frame by ID and validate it using IED
     // check first 4 bytes of each MEDIATEK_CACHE_SIZE frame
     // if there are two frames with validated IDs, check prior/next frame is valid and adjacent number
+
+    // validate sector ID
+    //(IdentificationData)
 
     return 0;
 }
