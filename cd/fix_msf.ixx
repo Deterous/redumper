@@ -46,7 +46,7 @@ void regenerate_data_sector(Sector &sector, int32_t lba)
         std::copy_n(ecc.p_parity, sizeof(ecc.p_parity), sector.mode1.ecc.p_parity);
         std::copy_n(ecc.q_parity, sizeof(ecc.q_parity), sector.mode1.ecc.q_parity);
 
-        sector.mode1.edc = EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
+        sector.mode1.edc = CD_EDC().update((uint8_t *)&sector, offsetof(Sector, mode1.edc)).final();
     }
     else if(sector.header.mode == 2)
     {
@@ -57,12 +57,12 @@ void regenerate_data_sector(Sector &sector, int32_t lba)
         {
             // can be zeroed, regenerate only if it was set
             if(sector.mode2.xa.form2.edc)
-                sector.mode2.xa.form2.edc = EDC().update((uint8_t *)&sector.mode2.xa.sub_header, offsetof(Sector, mode2.xa.form2.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
+                sector.mode2.xa.form2.edc = CD_EDC().update((uint8_t *)&sector.mode2.xa.sub_header, offsetof(Sector, mode2.xa.form2.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
         }
         // Form1
         else
         {
-            sector.mode2.xa.form1.edc = EDC().update((uint8_t *)&sector.mode2.xa.sub_header, offsetof(Sector, mode2.xa.form1.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
+            sector.mode2.xa.form1.edc = CD_EDC().update((uint8_t *)&sector.mode2.xa.sub_header, offsetof(Sector, mode2.xa.form1.edc) - offsetof(Sector, mode2.xa.sub_header)).final();
 
             // modifies sector, make sure sector data is not used after ECC calculation, otherwise header has to be restored
             Sector::Header header = sector.header;

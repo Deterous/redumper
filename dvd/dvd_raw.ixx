@@ -55,7 +55,7 @@ struct DataFrame
     IdentificationData id;
     uint16_t ied;
     uint8_t cpr_mai[6];
-    uint8_t user_data[FORM1_DATA_SIZE];
+    uint8_t main_data[FORM1_DATA_SIZE];
     uint32_t edc;
 };
 
@@ -64,7 +64,7 @@ struct NintendoDataFrame
 {
     IdentificationData id;
     uint16_t ied;
-    uint8_t user_data[FORM1_DATA_SIZE];
+    uint8_t main_data[FORM1_DATA_SIZE];
     uint8_t cpr_mai[6];
     uint32_t edc;
 };
@@ -74,7 +74,7 @@ struct RecordingFrame
 {
     struct Row
     {
-        uint8_t user_data[172];
+        uint8_t main_data[172];
         uint8_t parity_inner[10];
     };
 

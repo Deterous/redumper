@@ -12,9 +12,9 @@ target_sources(tests
     FILES
         "${CMAKE_SOURCE_DIR}/range.ixx"
         "${CMAKE_SOURCE_DIR}/cd/cd.ixx"
+        "${CMAKE_SOURCE_DIR}/cd/cd_edc.ixx"
+        "${CMAKE_SOURCE_DIR}/cd/cd_scrambler.ixx"
         "${CMAKE_SOURCE_DIR}/cd/cdrom.ixx"
-        "${CMAKE_SOURCE_DIR}/cd/edc.ixx"
-        "${CMAKE_SOURCE_DIR}/cd/scrambler.ixx"
         "${CMAKE_SOURCE_DIR}/crc/crc.ixx"
         "${CMAKE_SOURCE_DIR}/crc/crc16_gsm.ixx"
         "${CMAKE_SOURCE_DIR}/crc/crc32.ixx"
