@@ -141,7 +141,7 @@ void mediatek_dvd_cache(Context &ctx, std::fstream &fs_raw, std::fstream &fs_sta
     auto first_lba = mediatek_dvd_cache_extract(cache, frames, lba);
     int sectors_read = cache.size() / RECORDING_FRAME_SIZE;
 
-    write_entry(fs_raw, file_data.data(), RECORDING_FRAME_SIZE, first_lba - DVD_LBA_START, sectors_read, 0);
+    write_entry(fs_raw, frames.data(), RECORDING_FRAME_SIZE, first_lba - DVD_LBA_START, sectors_read, 0);
 
     // TODO: How to store raw state in state file?
     // write_entry(fs_state, (uint8_t *)file_state.data(), sizeof(State), first_lba - DVD_LBA_START, sectors_read, 0);
