@@ -159,6 +159,7 @@ target_sources(redumper
     "utils/animation.ixx"
     "utils/endian.ixx"
     "utils/file_io.ixx"
+    "utils/galois.ixx"
     "utils/hex_bin.ixx"
     "utils/logger.ixx"
     "utils/misc.ixx"
