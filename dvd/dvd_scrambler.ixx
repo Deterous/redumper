@@ -29,7 +29,7 @@ public:
             return unscrambled;
 
         // unscramble sector
-        process(sector, sector, 0, size);
+        process(sector, sector, lba / 16, 0, size);
 
         auto frame = (DataFrame *)sector;
 
@@ -39,37 +39,44 @@ public:
 
         // if unsuccessful, scramble sector back
         if(!unscrambled)
-            process(sector, sector, 0, size);
+            process(sector, sector, lba / 16, 0, size);
 
         return unscrambled;
     }
 
 
-    static void process(uint8_t *output, const uint8_t *data, uint32_t offset, uint32_t size)
+    static void process(uint8_t *output, const uint8_t *data, uint32_t group, uint32_t offset, uint32_t size)
     {
         for(uint32_t i = 0; i < size; ++i)
-            output[i] = data[i] ^ _TABLE[offset + i];
+            output[i] = data[i] ^ _TABLE[group][offset + i];
     }
 
 private:
+    static constexpr std::array<uint16_t, 16> INITIAL_VALUES = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
+
     static constexpr auto _TABLE = []()
     {
-        std::array<uint8_t, DATA_FRAME_SIZE> table{};
+        std::array<std::array<uint8_t, DATA_FRAME_SIZE>, 16> table{};
 
         // ECMA-268
 
-        uint16_t shift_register = 0x0001;
-
-        for(uint16_t i = offsetof(DataFrame, main_data); i < FORM1_DATA_SIZE; ++i)
+        for(uint8_t group = 0; group < 16; ++group)
         {
-            table[i] = (uint8_t)shift_register;
+            uint16_t shift_register = INITIAL_VALUES[group];
 
-            for(uint8_t b = 0; b < CHAR_BIT; ++b)
+            table[group][offsetof(DataFrame.main_data)] = (uint8_t)shift_register;
+
+            for(uint16_t i = offsetof(DataFrame.main_data) + 1; i < DATA_FRAME_SIZE - sizeof(DataFrame.edc); ++i)
             {
-                // each bit in the input stream of the scrambler is added modulo 2 to the least significant bit of a maximum length register
-                bool carry = (shift_register & 1) ^ (shift_register >> 1 & 1);
-                // the 15-bit register is of the parallel block synchronized type, and fed back according to polynomial x15 + x + 1
-                shift_register = ((uint16_t)carry << 15 | shift_register) >> 1;
+                for(uint8_t b = 0; b < CHAR_BIT; ++b)
+                {
+                    // new LSB = b14 XOR b10 
+                    bool lsb = (shift_register >> 14) ^ (shift_register >> 10);
+                    // 15-bit register requires masking MSB
+                    shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
+                }
+
+                table[group][i] = (uint8_t)shift_register;
             }
         }
 
