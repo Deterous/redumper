@@ -28,16 +28,19 @@ public:
         if(is_zeroed(sector, size) || size < DATA_FRAME_SIZE)
             return unscrambled;
 
+        auto frame = (DataFrame *)sector;
+
+        // validate sector header
+        if(frame.id.lba() != lba || !validate_id(sector))
+            return unscrambled;
+
         // unscramble sector
         process(sector, sector, lba / 16, 0, size);
 
-        auto frame = (DataFrame *)sector;
-
-        // EDC matches
         if(frame->edc == DVD_EDC().update((uint8_t *)sector.data(), sector.length() - 4).final())
             unscrambled = true;
 
-        // if unsuccessful, scramble sector back
+        // if EDC does not match, scramble sector back
         if(!unscrambled)
             process(sector, sector, lba / 16, 0, size);
 
