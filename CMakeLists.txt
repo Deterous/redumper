@@ -93,6 +93,7 @@ target_sources(redumper
     "cd/cd_dump_extra.ixx"
     "cd/cd_dump.ixx"
     "cd/cdrom.ixx"
+    "cd/dreamcast.ixx"
     "cd/cd_ecc.ixx"
     "cd/cd_edc.ixx"
     "cd/fix_msf.ixx"
