@@ -19,6 +19,7 @@ import common;
 import drive;
 import dvd.css;
 import dvd.xbox;
+import dvd.raw;
 import filesystem.iso9660;
 import filesystem.udf;
 import options;
@@ -499,6 +500,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
 
     std::filesystem::path iso_path(image_prefix + ".iso");
     std::filesystem::path state_path(image_prefix + ".state");
+    std::filesystem::path raw_path(image_prefix + ".raw");
 
     if(dump_mode == DumpMode::DUMP)
     {
@@ -784,6 +786,9 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
 
     std::fstream fs_iso(iso_path, file_mode);
     std::fstream fs_state(state_path, file_mode);
+    std::fstream fs_raw;
+    if(options.raw_dvd)
+        fs_raw.open(raw_path, file_mode);
 
     uint32_t refine_counter = 0;
     uint32_t refine_retries = options.retries ? options.retries : 1;
@@ -912,6 +917,9 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                 }
                 else
                     store = true;
+
+                if(options.raw_dvd)
+                    read_raw_dvd(ctx, fs_raw, fs_state, options, lba, sectors_to_read);
             }
 
             if(store)

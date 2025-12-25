@@ -11,6 +11,7 @@ import cd.scrambler;
 import crc.crc;
 import crc.crc16_gsm;
 import crc.crc32;
+import dvd.edc;
 import range;
 import utils.file_io;
 import utils.misc;
@@ -258,11 +259,18 @@ bool test_crc()
     if(!crc32_match)
         success = false;
 
-    // EDC
+    // CRC-32/CD-ROM-EDC
     auto edc = EDC().update((uint8_t *)check_value.data(), check_value.length()).final();
     auto edc_match = edc == 0x6EC2EDC4;
-    std::cout << std::format("EDC: 0x{:08X}, {}", edc, edc_match ? "success" : "failure") << std::endl;
+    std::cout << std::format("CD EDC: 0x{:08X}, {}", edc, edc_match ? "success" : "failure") << std::endl;
     if(!edc_match)
+        success = false;
+
+    // CRC-32/DVD-EDC
+    auto dvd_edc = DVD_EDC().update((uint8_t *)check_value.data(), check_value.length()).final();
+    auto dvd_edc_match = dvd_edc == 0xB27CE117;
+    std::cout << std::format("DVD EDC: 0x{:08X}, {}", dvd_edc, dvd_edc_match ? "success" : "failure") << std::endl;
+    if(!dvd_edc_match)
         success = false;
 
     // CRC reciprocal

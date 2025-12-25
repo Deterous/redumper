@@ -28,6 +28,7 @@ export struct Options
     bool list_all_drives;
     bool auto_eject;
     bool skeleton;
+    bool raw_dvd;
     bool debug;
 
     std::string image_path;
@@ -89,6 +90,7 @@ export struct Options
         , list_all_drives(false)
         , auto_eject(false)
         , skeleton(false)
+        , raw_dvd(false)
         , debug(false)
         , overwrite(false)
         , force_split(false)
@@ -165,6 +167,8 @@ export struct Options
                         auto_eject = true;
                     else if(key == "--skeleton")
                         skeleton = true;
+                    else if(key == "--raw-dvd")
+                        raw_dvd = true;
                     else if(key == "--debug")
                         debug = true;
                     else if(key == "--image-path")
@@ -380,6 +384,7 @@ export struct Options
         LOG("\t--list-all-drives               \tlist all supported drives");
         LOG("\t--auto-eject                    \tauto eject after dump");
         LOG("\t--skeleton                      \tgenerate skeleton after dump");
+        LOG("\t--raw-dvd                       \tread raw DVD sectors from cache (compatible drive only)");
         LOG("\t--drive=VALUE                   \tdrive to use, first available drive with disc, if not provided");
         LOG("\t--speed=VALUE                   \tdrive read speed, optimal drive speed will be used if not provided");
         LOG("\t--retries=VALUE                 \tnumber of sector retries in case of SCSI/C2 error (default: {})", retries);
