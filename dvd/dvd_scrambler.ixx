@@ -32,10 +32,10 @@ public:
         auto frame = (DataFrame *)sector;
 
         // validate sector header
-        // if(frame.id.lba() != lba || !validate_id(sector))
+        // if(frame->id.lba() != lba || !validate_id(sector))
         //     return unscrambled;
-        if(frame.id.lba() != lba)
-            LOG_R("[debug] frame {} =/= lba {}", frame.id.lba(), lba);
+        if(frame->id.lba() != lba)
+            LOG_R("[debug] frame {} =/= lba {}", frame->id.lba(), lba);
         if(!validate_id(sector))
             LOG_R("[debug] frame {} invalid ID", lba);
 
@@ -76,7 +76,7 @@ private:
 
             table[group][offsetof(DataFrame, main_data)] = (uint8_t)shift_register;
 
-            for(uint16_t i = offsetof(DataFrame, main_data) + 1; i < DATA_FRAME_SIZE - sizeof(DataFrame.edc); ++i)
+            for(uint16_t i = offsetof(DataFrame, main_data) + 1; i < DATA_FRAME_SIZE - sizeof(DataFrame::edc); ++i)
             {
                 for(uint8_t b = 0; b < CHAR_BIT; ++b)
                 {
