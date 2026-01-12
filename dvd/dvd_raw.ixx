@@ -61,7 +61,7 @@ export struct DataFrame
 };
 
 
-struct NintendoDataFrame
+export struct NintendoDataFrame
 {
     IdentificationData id;
     uint16_t ied;
