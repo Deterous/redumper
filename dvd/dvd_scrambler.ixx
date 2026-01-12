@@ -74,9 +74,9 @@ private:
         {
             uint16_t shift_register = INITIAL_VALUES[group];
 
-            table[group][offsetof(DataFrame.main_data)] = (uint8_t)shift_register;
+            table[group][offsetof(DataFrame, main_data)] = (uint8_t)shift_register;
 
-            for(uint16_t i = offsetof(DataFrame.main_data) + 1; i < DATA_FRAME_SIZE - sizeof(DataFrame.edc); ++i)
+            for(uint16_t i = offsetof(DataFrame, main_data) + 1; i < DATA_FRAME_SIZE - sizeof(DataFrame.edc); ++i)
             {
                 for(uint8_t b = 0; b < CHAR_BIT; ++b)
                 {
