@@ -896,8 +896,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                     DVD_Scrambler scrambler;
                     for(uint32_t i = 0; i < sectors_to_read; ++i)
                     {
-                        auto frame = (NintendoDataFrame *)(raw_drive_data.data() + i * DATA_FRAME_SIZE);
-                        if(!scrambler.descramble(frame, lba + i))
+                        if(!scrambler.descramble(raw_drive_data.data() + i * DATA_FRAME_SIZE, lba + i))
                             LOG_R("[debug] failed to descramble LBA {}", lba + i);
                     }
                 }
