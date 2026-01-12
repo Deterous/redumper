@@ -517,6 +517,9 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     bool kreon_firmware = is_kreon_firmware(ctx.drive_config);
     bool kreon_locked = false;
 
+    // TODO: gate only omnidrive drives and detect nintendo disc
+    bool nintendo = true;
+
     // unlock Kreon drive early, otherwise get capacity will return different value and check for xbox disc will fail
     if(kreon_firmware)
     {
@@ -881,7 +884,18 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                 store = true;
             else
             {
-                auto status = cmd_read(*ctx.sptd, drive_data.data(), FORM1_DATA_SIZE, lba + lba_shift, sectors_to_read, dump_mode == DumpMode::REFINE && refine_counter);
+                SPTD::Status status;
+                if(nintendo)
+                {
+                    std::vector<uint8_t> raw_drive_data(sectors_to_read * DATA_FRAME_SIZE);
+                    status = cmd_read_omnidrive(*ctx.sptd, drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift, sectors_to_read, OmniDrive_DiscType::DVD);
+                    extract_nintendo_sector(raw_drive_data.data(), drive_data.data(), lba, sectors_to_read);
+                }
+                else
+                {
+                    status = cmd_read(*ctx.sptd, drive_data.data(), FORM1_DATA_SIZE, lba + lba_shift, sectors_to_read, dump_mode == DumpMode::REFINE && refine_counter);
+                }
+
                 if(status.status_code)
                 {
                     if(options.verbose)
