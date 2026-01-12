@@ -42,7 +42,7 @@ public:
         // unscramble sector
         process(sector, sector, lba / 16, 0, size);
 
-        if(frame->edc == DVD_EDC().update((uint8_t *)sector.data(), sector.length() - 4).final())
+        if(frame->edc == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
             unscrambled = true;
 
         // if EDC does not match, scramble sector back
@@ -62,10 +62,9 @@ public:
     }
 
 private:
-    static constexpr std::array<uint16_t, 16> INITIAL_VALUES = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
-
     static constexpr auto _TABLE = []()
     {
+        std::array<uint16_t, 16> INITIAL_VALUES = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
         std::array<std::array<uint8_t, DATA_FRAME_SIZE>, 16> table{};
 
         // ECMA-268

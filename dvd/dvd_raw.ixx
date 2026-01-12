@@ -91,7 +91,7 @@ struct MediatekCacheFrame
 };
 
 
-bool validate_id(const uint8_t id[6])
+export bool validate_id(const uint8_t id[6])
 {
     // primitive polynomial x^8 + x^4 + x^3 + x^2 + 1
     static GF256 gf(0x11D); // 100011101
