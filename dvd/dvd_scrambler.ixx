@@ -21,7 +21,7 @@ namespace gpsxre
 export class DVD_Scrambler
 {
 public:
-    bool descramble(uint8_t *sector, int32_t lba, uint32_t size = DATA_FRAME_SIZE) const
+    bool descramble(uint8_t *sector, uint32_t lba, uint32_t size = DATA_FRAME_SIZE) const
     {
         bool unscrambled = false;
 

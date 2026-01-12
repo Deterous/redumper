@@ -893,10 +893,11 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                     status = cmd_read_omnidrive(*ctx.sptd, drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift, sectors_to_read, OmniDrive_DiscType::DVD);
                     extract_nintendo_sector(raw_drive_data.data(), drive_data.data(), lba, sectors_to_read);
 
+                    DVD_Scrambler scrambler;
                     for(uint32_t i = 0; i < sectors_to_read; ++i)
                     {
                         auto frame = (NintendoDataFrame *)(raw_drive_data.data() + i * DATA_FRAME_SIZE);
-                        if(!descramble(frame, lba + i))
+                        if(!scrambler.descramble(frame, lba + i))
                             LOG_R("[debug] failed to descramble LBA {}", lba + i);
                     }
                 }
