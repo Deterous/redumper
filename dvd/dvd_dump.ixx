@@ -889,16 +889,11 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
             else
             {
                 SPTD::Status status;
+                // TODO: implement custom Nintendo descrambling - in dvd split step?
                 if(nintendo)
-                {
-                    std::vector<uint8_t> raw_drive_data(sectors_to_read * DATA_FRAME_SIZE);
-                    status = cmd_read_omnidrive(*ctx.sptd, raw_drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift - DVD_LBA_START, sectors_to_read, OmniDrive_DiscType::DVD, true);
-                    // TODO: implement custom Nintendo descrambling - in dvd split step?
-                }
+                    status = cmd_read_omnidrive(*ctx.sptd, drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift - DVD_LBA_START, sectors_to_read, OmniDrive_DiscType::DVD, true);
                 else
-                {
                     status = cmd_read(*ctx.sptd, drive_data.data(), FORM1_DATA_SIZE, lba + lba_shift, sectors_to_read, dump_mode == DumpMode::REFINE && refine_counter);
-                }
 
                 if(status.status_code)
                 {
