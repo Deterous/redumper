@@ -890,7 +890,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                 if(nintendo)
                 {
                     std::vector<uint8_t> raw_drive_data(sectors_to_read * DATA_FRAME_SIZE);
-                    status = cmd_read_omnidrive(*ctx.sptd, drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift, sectors_to_read, OmniDrive_DiscType::DVD);
+                    status = cmd_read_omnidrive(*ctx.sptd, raw_drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift, sectors_to_read, OmniDrive_DiscType::DVD);
                     extract_nintendo_sector(raw_drive_data.data(), drive_data.data(), lba, sectors_to_read);
 
                     // TODO: implement Nintendo descrambling
