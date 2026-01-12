@@ -450,7 +450,7 @@ export SPTD::Status cmd_read_omnidrive(SPTD &sptd, uint8_t *buffer, uint32_t blo
 {
     CDB12_ReadOmniDrive cdb = {};
     cdb.operation_code = (uint8_t)CDB_OperationCode::READ_OMNIDRIVE;
-    cdb.disc_type = disc_type;
+    cdb.disc_type = (uint8_t)disc_type;
     cdb.raw_addressing = raw_addressing ? 1 : 0;
     cdb.fua = fua ? 1 : 0;
     cdb.descramble = descramble ? 1 : 0;
