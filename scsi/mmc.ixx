@@ -874,11 +874,11 @@ export struct CDB10_WriteBuffer
 export struct CDB12_ReadOmniDrive
 {
     uint8_t operation_code;
-    uint8_t disc_type       :2;
-    uint8_t raw_addressing  :1;
-    uint8_t fua             :1;
-    uint8_t descramble      :1;
-    uint8_t reserved1       :3;
+    uint8_t disc_type      :2;
+    uint8_t raw_addressing :1;
+    uint8_t fua            :1;
+    uint8_t descramble     :1;
+    uint8_t reserved1      :3;
     uint8_t address[4];
     uint8_t transfer_blocks[4];
     uint8_t subchannels :2;
