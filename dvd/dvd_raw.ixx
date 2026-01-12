@@ -120,7 +120,7 @@ export bool validate_id(const uint8_t id[6])
     return (poly[4] == id[4]) && (poly[5] == id[5]);
 }
 
-void extract_nintendo_sector(uint8_t *frames, uint8_t *sectors, uint32_t lba, uint32_t num_sectors)
+export void extract_nintendo_sector(uint8_t *frames, uint8_t *sectors, uint32_t lba, uint32_t num_sectors)
 {
     for(uint32_t i = 0; i < num_sectors; ++i)
     {
