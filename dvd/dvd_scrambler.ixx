@@ -43,7 +43,7 @@ public:
 
         // if EDC does not match, scramble sector back
         if(!unscrambled)
-           process(sector, sector, lba / 16, 0, size);
+            process(sector, sector, lba / 16, 0, size);
 
         return unscrambled;
     }
