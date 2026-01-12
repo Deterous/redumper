@@ -23,10 +23,10 @@ namespace gpsxre
 {
 
 
-constexpr uint32_t DVD_LBA_START = -0x30000;
+export constexpr uint32_t DVD_LBA_START = -0x30000;
 export constexpr uint32_t DATA_FRAME_SIZE = 2064;
-constexpr uint32_t RECORDING_FRAME_SIZE = 2366;
-constexpr uint32_t MEDIATEK_CACHE_SIZE = 2384;
+export constexpr uint32_t RECORDING_FRAME_SIZE = 2366;
+export constexpr uint32_t MEDIATEK_CACHE_SIZE = 2384;
 
 
 
@@ -71,7 +71,7 @@ export struct NintendoDataFrame
 };
 
 
-struct RecordingFrame
+export struct RecordingFrame
 {
     struct Row
     {
@@ -84,7 +84,7 @@ struct RecordingFrame
 };
 
 
-struct MediatekCacheFrame
+export struct MediatekCacheFrame
 {
     RecordingFrame recording_frame;
     uint8_t unknown[18];
@@ -118,16 +118,6 @@ export bool validate_id(const uint8_t id[6])
     }
 
     return (poly[4] == id[4]) && (poly[5] == id[5]);
-}
-
-export void extract_nintendo_sector(uint8_t *frames, uint8_t *sectors, uint32_t lba, uint32_t num_sectors)
-{
-    for(uint32_t i = 0; i < num_sectors; ++i)
-    {
-        auto frame = (NintendoDataFrame *)(frames + i * DATA_FRAME_SIZE);
-
-        memcpy(sectors + i * FORM1_DATA_SIZE, frame->main_data, FORM1_DATA_SIZE);
-    }
 }
 
 }
