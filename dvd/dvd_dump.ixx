@@ -18,6 +18,8 @@ import cd.cdrom;
 import common;
 import drive;
 import dvd.css;
+import dvd.raw;
+import dvd.scrambler;
 import dvd.xbox;
 import filesystem.iso9660;
 import filesystem.udf;
@@ -890,6 +892,12 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                     std::vector<uint8_t> raw_drive_data(sectors_to_read * DATA_FRAME_SIZE);
                     status = cmd_read_omnidrive(*ctx.sptd, drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift, sectors_to_read, OmniDrive_DiscType::DVD);
                     extract_nintendo_sector(raw_drive_data.data(), drive_data.data(), lba, sectors_to_read);
+                    
+                    for(uint32_t i = 0; i < sectors_to_read; ++i)
+                    {
+                        if(!descramble(frame, lba + i))
+                            LOG_R("[debug] failed to descramble LBA {}", lba + i);
+                    }
                 }
                 else
                 {

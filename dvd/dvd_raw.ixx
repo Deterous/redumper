@@ -11,7 +11,6 @@ export module dvd.raw;
 import cd.cdrom;
 import common;
 import drive.mediatek;
-import dvd.scrambler;
 import options;
 import scsi.sptd;
 import utils.file_io;
@@ -126,9 +125,6 @@ void extract_nintendo_sector(uint8_t *frames, uint8_t *sectors, uint32_t lba, ui
     for(uint32_t i = 0; i < num_sectors; ++i)
     {
         auto frame = (NintendoDataFrame *)(frames + i * DATA_FRAME_SIZE);
-
-        if(!descramble(frame, lba + i))
-            LOG_R("[debug] failed to descramble");
 
         memcpy(sectors + i * FORM1_DATA_SIZE, frame->main_data, FORM1_DATA_SIZE);
     }
