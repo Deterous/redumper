@@ -456,7 +456,7 @@ export SPTD::Status cmd_read_omnidrive(SPTD &sptd, uint8_t *buffer, uint32_t blo
     cdb.descramble = descramble ? 1 : 0;
     cdb.subchannels = subchannels;
     cdb.c2 = c2;
-    *(int32_t *)cdb.address = endian_swap(start_lba);
+    *(int32_t *)cdb.address = endian_swap(address);
     *(uint32_t *)cdb.transfer_blocks = endian_swap(transfer_length);
 
     return sptd.sendCommand(&cdb, sizeof(cdb), buffer, block_size * transfer_length);
