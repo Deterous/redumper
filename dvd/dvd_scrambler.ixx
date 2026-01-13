@@ -36,10 +36,8 @@ public:
         if(frame->id.psn() != psn || !validate_id(sector))
             return unscrambled;
 
-        bool ngd = ngd_index.has_value();
-        uint32_t group = ngd ? ngd_index : psn / 16;
-
         // unscramble sector
+        uint32_t group = ngd_index.value_or(psn / 16);
         process(sector, sector, group, 0, size, ngd_index.has_value());
 
         if(frame->edc == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
