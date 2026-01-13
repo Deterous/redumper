@@ -66,7 +66,7 @@ public:
     }
 
 private:
-    constexpr auto make_table(std::array<uint16_t, 16> iv)
+    static constexpr auto make_table(std::array<uint16_t, 16> iv)
     {
         std::array<std::array<uint8_t, DATA_FRAME_SIZE>, 16> table{};
 
