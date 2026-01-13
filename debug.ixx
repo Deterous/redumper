@@ -128,10 +128,10 @@ export int redumper_debug(Context &ctx, Options &options)
 
     if(1)
     {
-        auto sector = read_vector("scrambled.sector");
+        std::vector<uint8_t> sector = read_vector("scrambled.sector");
 
         auto frame = (DataFrame *)sector;
-        LOG("id {} and psn {}", frame->id.psn(), psn);
+        LOG("id {}", frame->id.psn());
         if(!validate_id(sector))
             LOG("invalid ID");
 
