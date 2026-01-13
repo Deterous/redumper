@@ -1,4 +1,5 @@
 module;
+#include <array>
 #include <bit>
 #include <cstdint>
 #include <cstring>
@@ -130,14 +131,14 @@ export int redumper_debug(Context &ctx, Options &options)
     if(1)
     {
         LOG("");
-        std::array<uint16_t, ECC_FRAMES> iv = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
-        for(uint8_t group = 0; group < ECC_FRAMES; ++group)
+        std::array<uint16_t, 16> iv = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
+        for(uint8_t group = 0; group < 16; ++group)
         {
             uint16_t shift_register = iv[group];
 
             LOG_F("{}", (uint8_t)shift_register);
 
-            for(uint16_t i = 1; i < FORM1_DATA_SIZE; ++i)
+            for(uint16_t i = 1; i < 2048; ++i)
             {
                 for(uint8_t b = 0; b < CHAR_BIT; ++b)
                 {
@@ -155,7 +156,7 @@ export int redumper_debug(Context &ctx, Options &options)
         std::vector<uint8_t> sector = read_vector("scrambled.sector");
         auto copy = sector;
         DVD_Scrambler scrambler;
-        uint32_t sum = 433;
+        uint32_t sum = 430;
         uint32_t ngd_id = ((sum >> 4) + sum) & 0xF;
         LOG("Sector 0:");
         scrambler.descramble(sector.data(), 0x030000, DATA_FRAME_SIZE, ngd_id);
