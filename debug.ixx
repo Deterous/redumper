@@ -136,7 +136,7 @@ export int redumper_debug(Context &ctx, Options &options)
         {
             uint16_t shift_register = iv[group];
 
-            LOG_F("{}", (uint8_t)shift_register);
+            LOG_F("{:04X}", (uint8_t)shift_register);
 
             for(uint16_t i = 1; i < 2048; ++i)
             {
@@ -148,7 +148,7 @@ export int redumper_debug(Context &ctx, Options &options)
                     shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
                 }
 
-                LOG_F("{}", (uint8_t)shift_register);
+                LOG_F("{:04X}", (uint8_t)shift_register);
             }
         }
 
