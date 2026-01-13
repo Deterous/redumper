@@ -137,11 +137,11 @@ export int redumper_debug(Context &ctx, Options &options)
         uint32_t ngd_id = ((sum >> 4) + sum) & 0xF;
         LOG("Sector 0:");
         scrambler.descramble(sector.data(), 0x030000, DATA_FRAME_SIZE, ngd_id);
-        LOG("  calc EDC: {}", DVD_EDC().update(sector.data(), offsetof(DataFrame, edc)).final())
+        LOG("  calc EDC: {}", DVD_EDC().update(sector.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled0.sector", sector);
         LOG("Sector 16:");
         scrambler.descramble(copy.data(), 0x030010, DATA_FRAME_SIZE, ngd_id);
-        LOG("  calc EDC: {}", DVD_EDC().update(copy.data(), offsetof(DataFrame, edc)).final())
+        LOG("  calc EDC: {}", DVD_EDC().update(copy.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled16.sector", copy);
     }
 
