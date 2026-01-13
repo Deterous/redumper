@@ -33,15 +33,15 @@ public:
         auto frame = (DataFrame *)sector;
 
         // validate sector header
-        // if(frame->id.psn() != psn || !validate_id(sector))
-        // ....return unscrambled;
+        if(frame->id.psn() != psn || !validate_id(sector))
+            return unscrambled;
 
         // determine initial table offset
-        uint32_t offset;
+        uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
         if(psn >= 0x030010 && ngd_id.has_value())
-            offset += ((psn >> 4 & 0xF) ^ ngd_id.value()) * FORM1_DATA_SIZE + 0x3C00;
-        else
-            offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
+            offset = ((psn >> 4 & 0xF) ^ ngd_id.value()) * FORM1_DATA_SIZE + 0x3C00;
+        else if(psn >= 0x030000 && ngd_id.has_value())
+            offset += 0x3C00;
 
         // unscramble sector
         process(sector, sector, offset, size);
@@ -59,9 +59,11 @@ public:
 
     static void process(uint8_t *output, const uint8_t *data, uint32_t offset, uint32_t size)
     {
-        for(uint32_t i = offsetof(DataFrame, main_data); i < offsetof(DataFrame, edc) && i < size; ++i)
+        uint32_t main_data_offset = offsetof(DataFrame, main_data);
+        uint32_t end_byte = size < offsetof(DataFrame, edc) ? size : offsetof(DataFrame, edc);
+        for(uint32_t i = main_data_offset; i < end_byte; ++i)
         {
-            uint32_t index = (offset + i - offsetof(DataFrame, main_data)) % (FORM1_DATA_SIZE * ECC_FRAMES);
+            uint32_t index = (offset + i - main_data_offset) % (FORM1_DATA_SIZE * ECC_FRAMES);
             output[i] = data[i] ^ _TABLE[index];
         }
     }

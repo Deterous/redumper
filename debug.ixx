@@ -131,14 +131,11 @@ export int redumper_debug(Context &ctx, Options &options)
         std::vector<uint8_t> sector = read_vector("scrambled.sector");
 
         auto frame = (DataFrame *)sector.data();
-        LOG("id {}", frame->id.psn());
-        if(!validate_id(sector.data()))
-            LOG("invalid ID");
 
         DVD_Scrambler scrambler;
         uint32_t sum = 430;
         uint32_t ngd_id = ((sum >> 4) + sum) & 0xF;
-        if(scrambler.descramble(sector.data(), 0x030000))
+        if(scrambler.descramble(sector.data(), 0x030000, DATA_FRAME_SIZE, ngd_id))
             LOG("unscrambled!");
         write_vector("descrambled.sector", sector);
         LOG("...done");

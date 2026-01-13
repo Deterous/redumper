@@ -48,7 +48,7 @@ export struct IdentificationData
 
     int32_t psn() const
     {
-        return (int32_t)((uint32_t(sector_number[2]) << 16) | (uint32_t(sector_number[1]) << 8) | uint32_t(sector_number[0]));
+        return (int32_t)((uint32_t(sector_number[0]) << 16) | (uint32_t(sector_number[1]) << 8) | uint32_t(sector_number[2]));
     }
 };
 
