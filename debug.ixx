@@ -131,7 +131,6 @@ export int redumper_debug(Context &ctx, Options &options)
     {
         std::vector<uint8_t> sector = read_vector("scrambled.sector");
         auto copy = sector;
-        auto frame = (DataFrame *)sector.data();
         DVD_Scrambler scrambler;
         uint32_t sum = 430;
         uint32_t ngd_id = ((sum >> 4) + sum) & 0xF;
