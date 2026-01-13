@@ -129,16 +129,20 @@ export int redumper_debug(Context &ctx, Options &options)
     if(1)
     {
         std::vector<uint8_t> sector = read_vector("scrambled.sector");
-
         auto frame = (DataFrame *)sector.data();
-
         DVD_Scrambler scrambler;
         uint32_t sum = 430;
         uint32_t ngd_id = ((sum >> 4) + sum) & 0xF;
+        LOG("Sector 0:")
         if(scrambler.descramble(sector.data(), 0x030000, DATA_FRAME_SIZE, ngd_id))
-            LOG("unscrambled!");
-        write_vector("descrambled.sector", sector);
-        LOG("...done");
+            LOG("  unscrambled!");
+        LOG("  calc EDC: {}", DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
+        write_vector("descrambled0.sector", sector);
+        LOG("Sector 16:")
+        if(scrambler.descramble(sector.data(), 0x030010, DATA_FRAME_SIZE, ngd_id))
+            LOG("  unscrambled!");
+        LOG("  calc EDC: {}", DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
+        write_vector("descrambled16.sector", sector);
     }
 
     if(0)

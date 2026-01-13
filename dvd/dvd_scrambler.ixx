@@ -45,7 +45,7 @@ public:
             else
                 offset += 0x3C00;
         }
-        // TODO: NR discs have unique scrambling
+        // TODO: NR discs have unique scrambling: ngd_id = 0x9, no 0x3C00 offset
 
         // unscramble sector
         process(sector, sector, offset, size);
