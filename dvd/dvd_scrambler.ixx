@@ -33,8 +33,13 @@ public:
         auto frame = (DataFrame *)sector;
 
         // validate sector header
-        if(frame->id.psn() != psn || !validate_id(sector))
-            return unscrambled;
+        // if(frame->id.psn() != psn || !validate_id(sector))
+        // ....return unscrambled;
+
+        if(!validate_id(sector))
+            LOG("invalid ID");
+        if(frame->id.psn() != psn)
+            LOG("frame->id.psn() {} =/= {}", frame->id.psn(), psn)
 
         // determine initial table offset
         uint32_t offset;
@@ -50,8 +55,8 @@ public:
             unscrambled = true;
 
         // if EDC does not match, scramble sector back
-        if(!unscrambled)
-            process(sector, sector, offset, size);
+        // if(!unscrambled)
+        // ....process(sector, sector, offset, size);
 
         return unscrambled;
     }
@@ -60,7 +65,10 @@ public:
     static void process(uint8_t *output, const uint8_t *data, uint32_t offset, uint32_t size)
     {
         for(uint32_t i = offsetof(DataFrame, main_data); i < offsetof(DataFrame, edc) && i < size; ++i)
-            output[i] = data[i] ^ _TABLE[offset + i - offsetof(DataFrame, main_data)];
+        {
+            uint32_t index = (offset + i - offsetof(DataFrame, main_data)) % (FORM1_DATA_SIZE * ECC_FRAMES);
+            output[i] = data[i] ^ _TABLE[index];
+        }
     }
 
 private:

@@ -132,9 +132,10 @@ export int redumper_debug(Context &ctx, Options &options)
         DVD_Scrambler scrambler;
         uint32_t sum = 430;
         uint32_t ngd_id = ((sum >> 4) + sum) & 0xF;
-        scrambler.descramble(sector.data(), 0x030000);
+        if(scrambler.descramble(sector.data(), 0x030000))
+            LOG("unscrambled!")
         write_vector("descrambled.sector", sector);
-        LOG("");
+        LOG("...done");
     }
 
     if(0)
@@ -422,8 +423,6 @@ export int redumper_debug(Context &ctx, Options &options)
 
     LOG("");
 
-#else
-    LOG("Debug disabled");
 #endif
 
     return exit_code;
