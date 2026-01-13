@@ -46,7 +46,7 @@ export struct IdentificationData
 
     uint8_t sector_number[3];
 
-    int32_t lba() const
+    int32_t psn() const
     {
         return (int32_t)((uint32_t(sector_number[2]) << 16) | (uint32_t(sector_number[1]) << 8) | uint32_t(sector_number[0]));
     }

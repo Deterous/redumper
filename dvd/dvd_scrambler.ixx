@@ -5,6 +5,7 @@ module;
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <optional>
 
 export module dvd.scrambler;
 
@@ -21,7 +22,7 @@ namespace gpsxre
 export class DVD_Scrambler
 {
 public:
-    bool descramble(uint8_t *sector, uint32_t lba, uint32_t size = DATA_FRAME_SIZE, std::optional<std::uint32_t> ngd_index = std::nullopt) const
+    bool descramble(uint8_t *sector, uint32_t psn, uint32_t size = DATA_FRAME_SIZE, std::optional<std::uint32_t> ngd_index = std::nullopt) const
     {
         bool unscrambled = false;
 
@@ -32,11 +33,11 @@ public:
         auto frame = (DataFrame *)sector;
 
         // validate sector header
-        if(frame->id.lba() != lba || !validate_id(sector))
+        if(frame->id.psn() != psn || !validate_id(sector))
             return unscrambled;
 
         bool ngd = ngd_index.has_value();
-        uint32_t group = ngd ? ngd_index : lba / 16;
+        uint32_t group = ngd ? ngd_index : psn / 16;
 
         // unscramble sector
         process(sector, sector, group, 0, size, ngd_index.has_value());
