@@ -40,7 +40,7 @@ public:
         if(!validate_id(sector))
             LOG("invalid ID");
         if(frame->id.psn() != psn)
-            LOG("frame->id.psn() {} =/= {}", frame->id.psn(), psn)
+            LOG("frame->id.psn() {} =/= {}", frame->id.psn(), psn);
 
         // determine initial table offset
         uint32_t offset;
