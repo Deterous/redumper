@@ -117,7 +117,6 @@ export int redumper_debug(Context &ctx, Options &options)
 #ifndef NDEBUG
 
     std::string image_prefix = (std::filesystem::path(options.image_path) / options.image_name).string();
-    std::filesystem::path iso_path(image_prefix + ".iso");
     std::filesystem::path state_path(image_prefix + ".state");
     std::filesystem::path cache_path(image_prefix + ".cache");
     std::filesystem::path toc_path(image_prefix + ".toc");
@@ -129,9 +128,10 @@ export int redumper_debug(Context &ctx, Options &options)
 
     if(1)
     {
-        std::fstream fs_iso(iso_path, std::fstream::in | std::fstream::binary);
         auto sector = read_vector("scrambled.sector");
         DVD_Scrambler scrambler;
+        uint32_t sum = 430;
+        uint32_t ngd_id = ((sum >> 4) + sum) & 0xF;
         scrambler.descramble(sector, 0x030000);
         write_vector("descrambled.sector", sector);
         LOG("");
