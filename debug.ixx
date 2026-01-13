@@ -133,7 +133,7 @@ export int redumper_debug(Context &ctx, Options &options)
         auto copy = sector;
         DVD_Scrambler scrambler;
         uint32_t sum = 430;
-        uint32_t ngd_id = ((sum >> 4) + sum) & 0xF;
+        uint32_t ngd_id = ((sum >> 4) + 0) & 0xF;
         LOG("Sector 0:");
         scrambler.descramble(sector.data(), 0x030000, DATA_FRAME_SIZE, ngd_id);
         LOG("  calc EDC: {}", DVD_EDC().update(sector.data(), offsetof(DataFrame, edc)).final());
