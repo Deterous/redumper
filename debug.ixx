@@ -22,6 +22,8 @@ import drive;
 import drive.mediatek;
 import dvd.dump;
 import dvd.xbox;
+import dvd.raw;
+import dvd.scrambler;
 import options;
 import scsi.cmd;
 import scsi.mmc;
@@ -115,6 +117,7 @@ export int redumper_debug(Context &ctx, Options &options)
 #ifndef NDEBUG
 
     std::string image_prefix = (std::filesystem::path(options.image_path) / options.image_name).string();
+    std::filesystem::path iso_path(image_prefix + ".iso");
     std::filesystem::path state_path(image_prefix + ".state");
     std::filesystem::path cache_path(image_prefix + ".cache");
     std::filesystem::path toc_path(image_prefix + ".toc");
@@ -123,6 +126,18 @@ export int redumper_debug(Context &ctx, Options &options)
     std::filesystem::path cue_path(image_prefix + ".cue");
     std::filesystem::path physical_path(image_prefix + ".physical");
     std::filesystem::path sub_path(image_prefix + ".subcode");
+
+    if(1)
+    {
+        std::fstream fs_iso(iso_path, std::fstream::in | std::fstream::binary);
+        std::fstream fs_sector(image_prefix + ".sector", std::fstream::out | std::fstream::binary);
+        std::vector<uint8_t> sector;
+        fs_state.read((char *)sector.data(), sector.size());
+        DVD_Scrambler scrambler;
+        scrambler.descramble(sector, 0x030000)
+        fs_sector.write((char *)sector.data(), sector.size());
+        LOG("");
+    }
 
     if(0)
     {
@@ -305,7 +320,7 @@ export int redumper_debug(Context &ctx, Options &options)
     }
 
     // MEDIATEK cache dump extract
-    if(1)
+    if(0)
     {
         std::vector<uint8_t> cache = read_vector(cache_path);
 
