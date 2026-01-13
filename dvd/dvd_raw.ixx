@@ -15,7 +15,6 @@ import options;
 import scsi.sptd;
 import utils.file_io;
 import utils.galois;
-import utils.logger; // remove later
 
 
 
