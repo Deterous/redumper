@@ -129,6 +129,12 @@ export int redumper_debug(Context &ctx, Options &options)
     if(1)
     {
         auto sector = read_vector("scrambled.sector");
+
+        auto frame = (DataFrame *)sector;
+        LOG("id {} and psn {}", frame->id.psn(), psn);
+        if(!validate_id(sector))
+            LOG("invalid ID");
+
         DVD_Scrambler scrambler;
         uint32_t sum = 430;
         uint32_t ngd_id = ((sum >> 4) + sum) & 0xF;

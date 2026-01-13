@@ -13,7 +13,6 @@ import cd.cdrom;
 import dvd.edc;
 import dvd.raw;
 import utils.misc;
-import utils.logger;
 
 
 
@@ -36,11 +35,6 @@ public:
         // validate sector header
         // if(frame->id.psn() != psn || !validate_id(sector))
         // ....return unscrambled;
-
-        if(!validate_id(sector))
-            LOG("invalid ID");
-        if(frame->id.psn() != psn)
-            LOG("frame->id.psn() {} =/= {}", frame->id.psn(), psn);
 
         // determine initial table offset
         uint32_t offset;
