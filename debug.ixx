@@ -130,12 +130,10 @@ export int redumper_debug(Context &ctx, Options &options)
     if(1)
     {
         std::fstream fs_iso(iso_path, std::fstream::in | std::fstream::binary);
-        std::fstream fs_sector(image_prefix + ".sector", std::fstream::out | std::fstream::binary);
-        std::vector<uint8_t> sector;
-        fs_state.read((char *)sector.data(), sector.size());
+        auto sector = read_vector("scrambled.sector");
         DVD_Scrambler scrambler;
         scrambler.descramble(sector, 0x030000)
-        fs_sector.write((char *)sector.data(), sector.size());
+        write_vector("descrambled.sector", sector);
         LOG("");
     }
 
