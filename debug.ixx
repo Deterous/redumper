@@ -21,6 +21,7 @@ import common;
 import drive;
 import drive.mediatek;
 import dvd.dump;
+import dvd.edc;
 import dvd.xbox;
 import dvd.raw;
 import dvd.scrambler;
@@ -133,12 +134,12 @@ export int redumper_debug(Context &ctx, Options &options)
         DVD_Scrambler scrambler;
         uint32_t sum = 430;
         uint32_t ngd_id = ((sum >> 4) + sum) & 0xF;
-        LOG("Sector 0:")
+        LOG("Sector 0:");
         if(scrambler.descramble(sector.data(), 0x030000, DATA_FRAME_SIZE, ngd_id))
             LOG("  unscrambled!");
         LOG("  calc EDC: {}", DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
         write_vector("descrambled0.sector", sector);
-        LOG("Sector 16:")
+        LOG("Sector 16:");
         if(scrambler.descramble(sector.data(), 0x030010, DATA_FRAME_SIZE, ngd_id))
             LOG("  unscrambled!");
         LOG("  calc EDC: {}", DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
