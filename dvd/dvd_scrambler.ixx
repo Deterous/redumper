@@ -38,10 +38,14 @@ public:
 
         // determine initial table offset
         uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
-        if(psn >= 0x030010 && ngd_id.has_value())
-            offset = ((psn >> 4 & 0xF) ^ ngd_id.value()) * FORM1_DATA_SIZE + 0x3C00;
-        else if(psn >= 0x030000 && ngd_id.has_value())
-            offset += 0x3C00;
+        if(ngd_id.has_value() && psn >= 0x030000)
+        {
+            if(psn >= 0x030010)
+                offset = ((psn >> 4 & 0xF) ^ ngd_id.value()) * FORM1_DATA_SIZE + 0x3C00;
+            else
+                offset += 0x3C00;
+        }
+        // TODO: NR discs have unique scrambling
 
         // unscramble sector
         process(sector, sector, offset, size);
@@ -87,7 +91,7 @@ private:
                 for(uint8_t b = 0; b < CHAR_BIT; ++b)
                 {
                     // new LSB = b14 XOR b10
-                    bool lsb = (shift_register >> 14) ^ (shift_register >> 10);
+                    bool lsb = (shift_register >> 14 & 1) ^ (shift_register >> 10 & 1);
                     // 15-bit register requires masking MSB
                     shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
                 }
