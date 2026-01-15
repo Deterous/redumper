@@ -133,16 +133,18 @@ export int redumper_debug(Context &ctx, Options &options)
         std::vector<uint8_t> sector = read_vector("scrambled.sector");
         auto copy = sector;
         DVD_Scrambler scrambler;
-        uint32_t sum = 433;
-        uint32_t ngd_id = ((sum / 0x10) + sum) & 0x0F;
         LOG("Sector 0:");
-        scrambler.descramble(sector.data(), 0x030001, DATA_FRAME_SIZE, ngd_id);
+        scrambler.descramble(sector.data(), 0x030001, DATA_FRAME_SIZE, 0xD);
         LOG("  calc EDC: {:X}", DVD_EDC().update(sector.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled0.sector", sector);
         LOG("Sector 16:");
-        scrambler.descramble(copy.data(), 0x030010, DATA_FRAME_SIZE, ngd_id);
+        scrambler.descramble(copy.data(), 0x030010, DATA_FRAME_SIZE, 0xD);
         LOG("  calc EDC: {:X}", DVD_EDC().update(copy.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled16.sector", copy);
+        LOG("Sector 16:");
+        scrambler.descramble(copy.data(), 0x030020, DATA_FRAME_SIZE, 0xD);
+        LOG("  calc EDC: {:X}", DVD_EDC().update(copy.data(), offsetof(DataFrame, edc)).final());
+        write_vector("descrambled32.sector", copy);
     }
 
     if(0)
