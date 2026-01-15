@@ -39,7 +39,7 @@ public:
         // determine XOR table offset
         uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
         if(ngd_id.has_value() && psn >= 0x030010)
-            offset += ngd_offsets[ngd_id.value()];
+            offset = (ngd_offsets[ngd_id.value()] ^ (psn >> 4 & 0xF)) * FORM1_DATA_SIZE;
         else if(ngd_id.has_value() && psn >= 0x030000)
             offset += ngd_offsets[0];
 
