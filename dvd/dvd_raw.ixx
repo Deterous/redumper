@@ -57,7 +57,7 @@ export struct DataFrame
     uint16_t ied;
     uint8_t cpr_mai[6];
     uint8_t main_data[FORM1_DATA_SIZE];
-    uint8_t edc[4];
+    uint32_t edc;
 };
 
 

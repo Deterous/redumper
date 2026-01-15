@@ -48,7 +48,7 @@ public:
         // unscramble sector
         process(sector, sector, offset, size);
 
-        if(bin2hex(std::vector<uint8_t>(frame->edc[0], sizeof(DataFrame::edc))) == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
+        if(frame->edc == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
             unscrambled = true;
 
         // if EDC does not match, scramble sector back
