@@ -51,8 +51,8 @@ public:
             unscrambled = true;
 
         // if EDC does not match, scramble sector back
-        if(!unscrambled)
-            process(sector, sector, offset, size, ngd_table);
+        // if(!unscrambled)
+        // ....process(sector, sector, offset, size, ngd_table);
 
         return unscrambled;
     }
