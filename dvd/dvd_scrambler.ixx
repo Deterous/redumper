@@ -42,11 +42,14 @@ public:
         // determine XOR table offset
         uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
 
-        // custom table offset
-        if(ngd_id.has_value() && psn >= 0x030010)
-            offset += (ngd_id.value() + 6.5) * FORM1_DATA_SIZE + (ngd_id.value() > 8);
-        else if(ngd_id.has_value() && psn >= 0x030000)
-            offset += 7.5 * FORM1_DATA_SIZE;
+        // custom XOR table offset for user data area
+        if(ngd_id.has_value() && psn >= 0x030000 && psn <= 0x0DE0B0)
+        {
+            if(psn >= 0x030010)
+                offset += (ngd_id.value() + 6.5) * FORM1_DATA_SIZE + (ngd_id.value() > 8);
+            else
+                offset += 7.5 * FORM1_DATA_SIZE;
+        }
 
         // unscramble sector
         process(sector, sector, offset, size);
@@ -55,8 +58,8 @@ public:
             unscrambled = true;
 
         // if EDC does not match, scramble sector back
-        // if(!unscrambled)
-        // ....process(sector, sector, offset, size);
+        if(!unscrambled)
+            process(sector, sector, offset, size);
 
         return unscrambled;
     }
