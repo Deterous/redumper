@@ -152,10 +152,10 @@ export int redumper_debug(Context &ctx, Options &options)
         LOG("");
         LOG("NGD Table:");
         LOG("");
-        std::array<uint16_t, 16> iv = { 0x0003, 0x0030, 0x7F00, 0x7001, 0x0006, 0x0045, 0x7E00, 0x6003, 0x000C, 0x00C0, 0x7C00, 0x4007, 0x0018, 0x0180, 0x7800, 0x000F };
+        std::array<uint16_t, 16> iv2 = { 0x0003, 0x0030, 0x7F00, 0x7001, 0x0006, 0x0045, 0x7E00, 0x6003, 0x000C, 0x00C0, 0x7C00, 0x4007, 0x0018, 0x0180, 0x7800, 0x000F };
         for(uint8_t group = 0; group < 16; ++group)
         {
-            uint16_t shift_register = iv[group];
+            uint16_t shift_register = iv2[group];
             LOG_F("{:04X}", shift_register);
             for(uint16_t i = 1; i < 2048; ++i)
             {
