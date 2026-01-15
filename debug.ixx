@@ -136,19 +136,19 @@ export int redumper_debug(Context &ctx, Options &options)
         std::vector<uint8_t> sector2 = read_vector("scrambled2.sector");
         DVD_Scrambler scrambler;
         LOG("0:");
-        scrambler.descramble(sector0.data(), 0x030000, DATA_FRAME_SIZE, 0x3);
+        scrambler.descramble(sector0.data(), 0x030000, DATA_FRAME_SIZE, 0x9);
         LOG("  calc EDC: {:X}", DVD_EDC().update(sector0.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled0.sector", sector0);
         LOG("1:");
-        scrambler.descramble(sector1.data(), 0x030010, DATA_FRAME_SIZE, 0x3);
+        scrambler.descramble(sector1.data(), 0x030010, DATA_FRAME_SIZE, 0x9);
         LOG("  calc EDC: {:X}", DVD_EDC().update(sector1.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled1.sector", sector1);
         LOG("11:");
-        scrambler.descramble(sector11.data(), 0x030011, DATA_FRAME_SIZE, 0x3);
+        scrambler.descramble(sector11.data(), 0x030011, DATA_FRAME_SIZE, 0x9);
         LOG("  calc EDC: {:X}", DVD_EDC().update(sector11.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled11.sector", sector11);
         LOG("2:");
-        scrambler.descramble(sector2.data(), 0x030020, DATA_FRAME_SIZE, 0x3);
+        scrambler.descramble(sector2.data(), 0x030020, DATA_FRAME_SIZE, 0x9);
         LOG("  calc EDC: {:X}", DVD_EDC().update(sector2.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled22.sector", sector2);
     }
