@@ -130,6 +130,45 @@ export int redumper_debug(Context &ctx, Options &options)
 
     if(1)
     {
+        LOG("DVD Table:");
+        LOG("");
+        std::array<uint16_t, 16> iv = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
+        for(uint8_t group = 0; group < 16; ++group)
+        {
+            uint16_t shift_register = iv[group];
+            LOG_F("{:04X}", shift_register);
+            for(uint16_t i = 1; i < 2048; ++i)
+            {
+                for(uint8_t b = 0; b < CHAR_BIT; ++b)
+                {
+                    // new LSB = b14 XOR b10
+                    bool lsb = (shift_register >> 14 & 1) ^ (shift_register >> 10 & 1);
+                    // 15-bit register requires masking MSB
+                    shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
+                }
+                LOG_F("{:04X}", shift_register);
+            }
+        }
+        LOG("");
+        LOG("NGD Table:");
+        LOG("");
+        std::array<uint16_t, 16> iv = { 0x0003, 0x0030, 0x7F00, 0x7001, 0x0006, 0x0045, 0x7E00, 0x6003, 0x000C, 0x00C0, 0x7C00, 0x4007, 0x0018, 0x0180, 0x7800, 0x000F };
+        for(uint8_t group = 0; group < 16; ++group)
+        {
+            uint16_t shift_register = iv[group];
+            LOG_F("{:04X}", shift_register);
+            for(uint16_t i = 1; i < 2048; ++i)
+            {
+                for(uint8_t b = 0; b < CHAR_BIT; ++b)
+                {
+                    // new LSB = b14 XOR b10
+                    bool lsb = (shift_register >> 14 & 1) ^ (shift_register >> 10 & 1);
+                    // 15-bit register requires masking MSB
+                    shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
+                }
+                LOG_F("{:04X}", shift_register);
+            }
+        }
         LOG("");
         std::vector<uint8_t> sector = read_vector("scrambled.sector");
         auto copy = sector;
