@@ -36,78 +36,47 @@ public:
         if(frame->id.psn() != psn || !validate_id(sector))
             return unscrambled;
 
-        // determine XOR table and offset
+        // determine XOR table offset
         uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
-        bool ngd_table = ngd_id.has_value() && psn >= 0x030010;
-        if(ngd_table)
-            offset = ngd_id.value() * FORM1_DATA_SIZE;
+        if(ngd_id.has_value() && psn >= 0x030010)
+            offset += ngd_offsets[ngd_id.value()];
         else if(ngd_id.has_value() && psn >= 0x030000)
-            offset += 0x3C00;
+            offset += ngd_offsets[0];
 
         // unscramble sector
-        process(sector, sector, offset, size, ngd_table);
+        process(sector, sector, offset, size);
 
         if(frame->edc == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
             unscrambled = true;
 
         // if EDC does not match, scramble sector back
         // if(!unscrambled)
-        // ....process(sector, sector, offset, size, ngd_table);
+        // ....process(sector, sector, offset, size);
 
         return unscrambled;
     }
 
 
-    static void process(uint8_t *output, const uint8_t *data, uint32_t offset, uint32_t size, bool ngd = false)
+    static void process(uint8_t *output, const uint8_t *data, uint32_t offset, uint32_t size)
     {
-        const uint8_t *table = ngd ? _NGD_TABLE.data() : _DVD_TABLE.data();
         uint32_t main_data_offset = offsetof(DataFrame, main_data);
         uint32_t end_byte = size < offsetof(DataFrame, edc) ? size : offsetof(DataFrame, edc);
         for(uint32_t i = main_data_offset; i < end_byte; ++i)
         {
             uint32_t index = (offset + i - main_data_offset) % (FORM1_DATA_SIZE * ECC_FRAMES);
-            output[i] = data[i] ^ table[index];
+            output[i] = data[i] ^ _TABLE[index];
         }
     }
 
 private:
-    static constexpr auto _DVD_TABLE = []()
+    static constexpr uint32_t ngd_offsets = { 0x3C00, 0x7C00, 0x4400, 0x0401, 0x4C00, 0x11B1, 0x5400, 0x1401, 0x5C00, 0x1C01, 0x6400, 0x2401, 0x6C00, 0x2C01, 0x7400, 0x3401 };
+    static constexpr auto _TABLE = []()
     {
         std::array<uint8_t, FORM1_DATA_SIZE * ECC_FRAMES> table{};
 
         // ECMA-267
 
         std::array<uint16_t, ECC_FRAMES> iv = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
-        for(uint8_t group = 0; group < ECC_FRAMES; ++group)
-        {
-            uint16_t shift_register = iv[group];
-
-            table[group * FORM1_DATA_SIZE] = (uint8_t)shift_register;
-
-            for(uint16_t i = 1; i < FORM1_DATA_SIZE; ++i)
-            {
-                for(uint8_t b = 0; b < CHAR_BIT; ++b)
-                {
-                    // new LSB = b14 XOR b10
-                    bool lsb = (shift_register >> 14 & 1) ^ (shift_register >> 10 & 1);
-                    // 15-bit register requires masking MSB
-                    shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
-                }
-
-                table[group * FORM1_DATA_SIZE + i] = (uint8_t)shift_register;
-            }
-        }
-
-        return table;
-    }();
-
-    static constexpr auto _NGD_TABLE = []()
-    {
-        std::array<uint8_t, FORM1_DATA_SIZE * ECC_FRAMES> table{};
-
-        // ECMA-267
-
-        std::array<uint16_t, ECC_FRAMES> iv = { 0x0003, 0x0030, 0x7F00, 0x7001, 0x0006, 0x0045, 0x7E00, 0x6003, 0x000C, 0x00C0, 0x7C00, 0x4007, 0x0018, 0x0180, 0x7800, 0x000F };
         for(uint8_t group = 0; group < ECC_FRAMES; ++group)
         {
             uint16_t shift_register = iv[group];
