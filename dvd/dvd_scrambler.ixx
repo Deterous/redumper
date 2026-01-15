@@ -63,7 +63,7 @@ public:
 
     static void process(uint8_t *output, const uint8_t *data, uint32_t offset, uint32_t size, bool ngd = false)
     {
-        const uint8_t* table = ngd ? _NGD_TABLE : _DVD_TABLE;
+        const uint8_t *table = ngd ? _NGD_TABLE : _DVD_TABLE;
         uint32_t main_data_offset = offsetof(DataFrame, main_data);
         uint32_t end_byte = size < offsetof(DataFrame, edc) ? size : offsetof(DataFrame, edc);
         for(uint32_t i = main_data_offset; i < end_byte; ++i)
