@@ -42,8 +42,7 @@ public:
         uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
         if(ngd_id.has_value() && psn >= 0x030010)
         {
-            uint32_t index = ngd_id.value() ^ (psn >> 4 & 0xF);
-            offset += index < 9 ? (index + 6.5) * FORM1_DATA_SIZE : (index - 9.5) * FORM1_DATA_SIZE + 1;
+            offset += (ngd_id.value() + 6.5) * FORM1_DATA_SIZE + (ngd_id.value() < 9 ? 0 : 1);
         }
         else if(ngd_id.has_value() && psn >= 0x030000)
         {
