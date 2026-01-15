@@ -144,6 +144,7 @@ export int redumper_debug(Context &ctx, Options &options)
         auto copyb = sector;
         auto copyc = sector;
         auto copyd = sector;
+        auto copye = sector;
         auto copyf = sector;
         DVD_Scrambler scrambler;
         LOG("0:");
