@@ -36,26 +36,23 @@ public:
         if(frame->id.psn() != psn || !validate_id(sector))
             return unscrambled;
 
-        // determine initial table offset
+        // determine XOR table and offset
         uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
-        if(ngd_id.has_value() && psn >= 0x030000)
-        {
-            if(psn >= 0x030010)
-                offset = ngd_id.value() * FORM1_DATA_SIZE + 0x3C00;
-            else
-                offset += 0x3C00;
-        }
-        // TODO: NR discs have unique scrambling: ngd_id = 0x9, no 0x3C00 offset
+        bool ngd_table = ngd_id.has_value() && psn >= 0x030010;
+        if(ngd_table)
+            offset = ngd_id.value() * FORM1_DATA_SIZE;
+        else if(ngd_id.has_value() && psn >= 0x030000)
+            offset += 0x3C00;
 
         // unscramble sector
-        process(sector, sector, offset, size, ngd_id.has_value() && psn >= 0x030010);
+        process(sector, sector, offset, size, ngd_table);
 
         if(frame->edc == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
             unscrambled = true;
 
         // if EDC does not match, scramble sector back
-        // if(!unscrambled)
-        // ....process(sector, sector, offset, size);
+        if(!unscrambled)
+            process(sector, sector, offset, size, ngd_table);
 
         return unscrambled;
     }
