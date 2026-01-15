@@ -6,6 +6,7 @@ module;
 #include <cstdint>
 #include <cstring>
 #include <optional>
+#include <vector>
 
 export module dvd.scrambler;
 
@@ -47,12 +48,12 @@ public:
         // unscramble sector
         process(sector, sector, offset, size);
 
-        // if(bin2hex(std::vector<uint8_t>(frame->edc, sizeof(DataFrame::edc))) == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
-        // unscrambled = true;
+        if(bin2hex(std::vector<uint8_t>(frame->edc, sizeof(DataFrame::edc))) == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
+            unscrambled = true;
 
         // if EDC does not match, scramble sector back
-        if(!unscrambled)
-            process(sector, sector, offset, size);
+        // if(!unscrambled)
+        // ....process(sector, sector, offset, size);
 
         return unscrambled;
     }
