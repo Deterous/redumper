@@ -135,6 +135,7 @@ export int redumper_debug(Context &ctx, Options &options)
         std::vector<uint8_t> sector11 = read_vector("scrambled11.sector");
         std::vector<uint8_t> sector2 = read_vector("scrambled2.sector");
         std::vector<uint8_t> sector3 = read_vector("scrambled3.sector");
+        std::vector<uint8_t> sector100 = read_vector("scrambled100.sector");
         DVD_Scrambler scrambler;
         auto frame = (DataFrame *)sector0.data();
         LOG("0:");
@@ -157,6 +158,10 @@ export int redumper_debug(Context &ctx, Options &options)
         if(scrambler.descramble(sector3.data(), 0x030030, DATA_FRAME_SIZE, 0x9))
             LOG("  calc EDC: {:X}", DVD_EDC().update(sector3.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled3.sector", sector3);
+        LOG("100:");
+        if(scrambler.descramble(sector100.data(), 0x030063, DATA_FRAME_SIZE, 0x9))
+            LOG("  calc EDC: {:X}", DVD_EDC().update(sector100.data(), offsetof(DataFrame, edc)).final());
+        write_vector("descrambled100.sector", sector100);
     }
 
     if(0)
