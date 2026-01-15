@@ -135,7 +135,7 @@ export int redumper_debug(Context &ctx, Options &options)
         std::vector<uint8_t> sector11 = read_vector("scrambled11.sector");
         std::vector<uint8_t> sector2 = read_vector("scrambled2.sector");
         DVD_Scrambler scrambler;
-        auto frame = (DataFrame *)sector.data();
+        auto frame = (DataFrame *)sector0.data();
         LOG("0:");
         scrambler.descramble(sector0.data(), 0x030000, DATA_FRAME_SIZE, 0x9);
         LOG("  calc EDC: {}", DVD_EDC().update(sector0.data(), offsetof(DataFrame, edc)).final());
