@@ -12,6 +12,7 @@ export module dvd.scrambler;
 import cd.cdrom;
 import dvd.edc;
 import dvd.raw;
+import utils.hex_bin;
 import utils.misc;
 
 
@@ -46,12 +47,12 @@ public:
         // unscramble sector
         process(sector, sector, offset, size);
 
-        if(frame->edc == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
+        if(bin2hex(frame->edc) == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
             unscrambled = true;
 
         // if EDC does not match, scramble sector back
-        // if(!unscrambled)
-        // ....process(sector, sector, offset, size);
+        if(!unscrambled)
+            process(sector, sector, offset, size);
 
         return unscrambled;
     }
