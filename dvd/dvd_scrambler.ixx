@@ -39,7 +39,7 @@ public:
         // determine XOR table offset
         uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
         if(ngd_id.has_value() && psn >= 0x030010)
-            offset = (ngd_offsets[ngd_id.value()] ^ (psn >> 4 & 0xF)) * FORM1_DATA_SIZE;
+            offset = ngd_offsets[ngd_id.value() ^ (psn >> 4 & 0xF)];
         else if(ngd_id.has_value() && psn >= 0x030000)
             offset += ngd_offsets[0];
 
@@ -69,7 +69,7 @@ public:
     }
 
 private:
-    static constexpr uint32_t ngd_offsets[] = { 0x3C00, 0x7C00, 0x4400, 0x0401, 0x4C00, 0x11B1, 0x5400, 0x1401, 0x5C00, 0x1C01, 0x6400, 0x2401, 0x6C00, 0x2C01, 0x7400, 0x3401 };
+    static constexpr uint32_t ngd_offsets[] = { 0x3C00, 0x7C00, 0x4400, 0x0401, 0x4C00, 0x0C01, 0x5400, 0x1401, 0x5C00, 0x1C01, 0x6400, 0x2401, 0x6C00, 0x2C01, 0x7400, 0x3401 };
     static constexpr auto _TABLE = []()
     {
         std::array<uint8_t, FORM1_DATA_SIZE * ECC_FRAMES> table{};
