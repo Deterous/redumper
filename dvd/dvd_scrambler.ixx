@@ -75,9 +75,7 @@ public:
         for(uint32_t i = main_data_offset; i < end_byte; ++i)
         {
             // non-standard wrap-around (last byte = first byte)
-            uint32_t index = offset + i - main_data_offset;
-            if(index >= FORM1_DATA_SIZE * ECC_FRAMES)
-                index -= FORM1_DATA_SIZE * ECC_FRAMES - 1;
+            uint32_t index = (offset + i - main_data_offset) % (FORM1_DATA_SIZE * ECC_FRAMES - 1);
             output[i] = data[i] ^ _TABLE[index];
         }
     }
