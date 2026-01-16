@@ -105,7 +105,6 @@ private:
 
                 table[group * FORM1_DATA_SIZE + i] = (uint8_t)shift_register;
             }
-            temp = shift_register;
         }
 
         return table;
