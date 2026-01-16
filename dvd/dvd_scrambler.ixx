@@ -73,7 +73,12 @@ public:
         uint32_t main_data_offset = offsetof(DataFrame, main_data);
         uint32_t end_byte = size < offsetof(DataFrame, edc) ? size : offsetof(DataFrame, edc);
         for(uint32_t i = main_data_offset; i < end_byte; ++i)
+        {
+            uint32_t index = offset + i - main_data_offset;
+            if(index >= FORM1_DATA_SIZE * ECC_FRAMES)
+                index -= FORM1_DATA_SIZE * ECC_FRAMES - 1;
             output[i] = data[i] ^ _TABLE[offset + i - main_data_offset];
+        }
     }
 
 private:
@@ -89,9 +94,6 @@ private:
             uint16_t shift_register = iv[group];
 
             table[group * FORM1_DATA_SIZE] = (uint8_t)shift_register;
-
-            // extend table to account for custom offsets
-            // uint16_t group_length = group == ECC_FRAMES - 1 ? 2 * FORM1_DATA_SIZE : FORM1_DATA_SIZE;
 
             for(uint16_t i = 1; i < ECC_FRAMES; ++i)
             {
