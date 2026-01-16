@@ -74,6 +74,7 @@ public:
         uint32_t end_byte = size < offsetof(DataFrame, edc) ? size : offsetof(DataFrame, edc);
         for(uint32_t i = main_data_offset; i < end_byte; ++i)
         {
+            // non-standard wrap-around (last byte = first byte)
             uint32_t index = offset + i - main_data_offset;
             if(index >= FORM1_DATA_SIZE * ECC_FRAMES)
                 index -= FORM1_DATA_SIZE * ECC_FRAMES - 1;
@@ -95,7 +96,7 @@ private:
 
             table[group * FORM1_DATA_SIZE] = (uint8_t)shift_register;
 
-            for(uint16_t i = 1; i < ECC_FRAMES; ++i)
+            for(uint16_t i = 1; i < FORM1_DATA_SIZE; ++i)
             {
                 for(uint8_t b = 0; b < CHAR_BIT; ++b)
                 {
