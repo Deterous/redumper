@@ -16,6 +16,7 @@ module;
 export module debug;
 
 import cd.cd;
+import cd.cdrom;
 import cd.common;
 import cd.subcode;
 import cd.toc;
