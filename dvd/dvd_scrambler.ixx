@@ -77,7 +77,9 @@ public:
             uint32_t index = offset + i - main_data_offset;
             // non-standard wrap when crossing table end
             if(index >= _TABLE_LENGTH && offset < _TABLE_LENGTH)
-                index -= (FORM1_DATA_SIZE * ECC_FRAMES - 1);
+                index -= (_TABLE_LENGTH - 1);
+            else if(index >= _TABLE_LENGTH)
+                index -= _TABLE_LENGTH;
             output[i] = data[i] ^ _TABLE[index];
         }
     }
