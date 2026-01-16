@@ -77,7 +77,7 @@ public:
             uint32_t index = offset + i - main_data_offset;
             if(index >= FORM1_DATA_SIZE * ECC_FRAMES)
                 index -= FORM1_DATA_SIZE * ECC_FRAMES - 1;
-            output[i] = data[i] ^ _TABLE[offset + i - main_data_offset];
+            output[i] = data[i] ^ _TABLE[index];
         }
     }
 
