@@ -74,7 +74,7 @@ public:
         uint32_t end_byte = size < offsetof(DataFrame, edc) ? size : offsetof(DataFrame, edc);
         for(uint32_t i = main_data_offset; i < end_byte; ++i)
         {
-            uint32_t index = (offset + i - main_data_offset) % (FORM1_DATA_SIZE * ECC_FRAMES);
+            uint32_t index = (offset + i - main_data_offset);
             output[i] = data[i] ^ _TABLE[index];
         }
     }
