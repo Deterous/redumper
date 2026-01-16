@@ -7,6 +7,7 @@ module;
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <numeric>
 #include <set>
 #include <string>
 #include <vector>
@@ -131,97 +132,21 @@ export int redumper_debug(Context &ctx, Options &options)
     if(1)
     {
         std::ifstream ifs(image_prefix + ".scrambled", std::ifstream::binary);
-        std::ofstream ofs0(image_prefix + ".descrambled0", std::ofstream::binary);
-        std::ofstream ofs1(image_prefix + ".descrambled1", std::ofstream::binary);
-        std::ofstream ofs2(image_prefix + ".descrambled2", std::ofstream::binary);
-        std::ofstream ofs3(image_prefix + ".descrambled3", std::ofstream::binary);
-        std::ofstream ofs4(image_prefix + ".descrambled4", std::ofstream::binary);
-        std::ofstream ofs5(image_prefix + ".descrambled5", std::ofstream::binary);
-        std::ofstream ofs6(image_prefix + ".descrambled6", std::ofstream::binary);
-        std::ofstream ofs7(image_prefix + ".descrambled7", std::ofstream::binary);
-        std::ofstream ofs8(image_prefix + ".descrambled8", std::ofstream::binary);
-        std::ofstream ofs9(image_prefix + ".descrambled9", std::ofstream::binary);
-        std::ofstream ofsA(image_prefix + ".descrambledA", std::ofstream::binary);
-        std::ofstream ofsB(image_prefix + ".descrambledB", std::ofstream::binary);
-        std::ofstream ofsC(image_prefix + ".descrambledC", std::ofstream::binary);
-        std::ofstream ofsD(image_prefix + ".descrambledD", std::ofstream::binary);
-        std::ofstream ofsE(image_prefix + ".descrambledE", std::ofstream::binary);
-        std::ofstream ofsF(image_prefix + ".descrambledF", std::ofstream::binary);
+        std::ofstream ofs(image_prefix + ".descrambled", std::ofstream::binary);
         DVD_Scrambler scrambler;
-        std::vector<uint8_t> sector0(2064);
-        std::vector<uint8_t> sector1(2064);
-        std::vector<uint8_t> sector2(2064);
-        std::vector<uint8_t> sector3(2064);
-        std::vector<uint8_t> sector4(2064);
-        std::vector<uint8_t> sector5(2064);
-        std::vector<uint8_t> sector6(2064);
-        std::vector<uint8_t> sector7(2064);
-        std::vector<uint8_t> sector8(2064);
-        std::vector<uint8_t> sector9(2064);
-        std::vector<uint8_t> sectorA(2064);
-        std::vector<uint8_t> sectorB(2064);
-        std::vector<uint8_t> sectorC(2064);
-        std::vector<uint8_t> sectorD(2064);
-        std::vector<uint8_t> sectorE(2064);
-        std::vector<uint8_t> sectorF(2064);
-        uint32_t i = 0;
-        while(true)
+        std::vector<uint8_t> sector(2064);
+        ifs.read((char *)sector.data(), sector.size());
+        scrambler.descramble(sector.data(), 0x030000, DATA_FRAME_SIZE, 0);
+        auto bytesRead = ifs.gcount();
+        auto sum = std::accumulate(sector.begin() + 12, sector.begin() + 20, 0);
+        uint8_t key = ((sum >> 4) ^ sum) & 0x0F;
+        while(bytesRead < sector.size())
         {
-            ifs.read((char *)sector0.data(), sector0.size());
-            auto bytesRead = ifs.gcount();
-            if(bytesRead < sector0.size())
-                break;
-            sector1 = sector0;
-            sector2 = sector0;
-            sector3 = sector0;
-            sector4 = sector0;
-            sector5 = sector0;
-            sector6 = sector0;
-            sector7 = sector0;
-            sector8 = sector0;
-            sector9 = sector0;
-            sectorA = sector0;
-            sectorB = sector0;
-            sectorC = sector0;
-            sectorD = sector0;
-            sectorE = sector0;
-            sectorF = sector0;
-            bool success = false;
-            success |= scrambler.descramble(sector0.data(), 0x030000 + i, DATA_FRAME_SIZE, 0x0);
-            success |= scrambler.descramble(sector1.data(), 0x030000 + i, DATA_FRAME_SIZE, 0x1);
-            success |= scrambler.descramble(sector2.data(), 0x030000 + i, DATA_FRAME_SIZE, 0x2);
-            success |= scrambler.descramble(sector3.data(), 0x030000 + i, DATA_FRAME_SIZE, 0x3);
-            success |= scrambler.descramble(sector4.data(), 0x030000 + i, DATA_FRAME_SIZE, 0x4);
-            success |= scrambler.descramble(sector5.data(), 0x030000 + i, DATA_FRAME_SIZE, 0x5);
-            success |= scrambler.descramble(sector6.data(), 0x030000 + i, DATA_FRAME_SIZE, 0x6);
-            success |= scrambler.descramble(sector7.data(), 0x030000 + i, DATA_FRAME_SIZE, 0x7);
-            success |= scrambler.descramble(sector8.data(), 0x030000 + i, DATA_FRAME_SIZE, 0x8);
-            success |= scrambler.descramble(sector9.data(), 0x030000 + i, DATA_FRAME_SIZE, 0x9);
-            success |= scrambler.descramble(sectorA.data(), 0x030000 + i, DATA_FRAME_SIZE, 0xA);
-            success |= scrambler.descramble(sectorB.data(), 0x030000 + i, DATA_FRAME_SIZE, 0xB);
-            success |= scrambler.descramble(sectorC.data(), 0x030000 + i, DATA_FRAME_SIZE, 0xC);
-            success |= scrambler.descramble(sectorD.data(), 0x030000 + i, DATA_FRAME_SIZE, 0xD);
-            success |= scrambler.descramble(sectorE.data(), 0x030000 + i, DATA_FRAME_SIZE, 0xE);
-            success |= scrambler.descramble(sectorF.data(), 0x030000 + i, DATA_FRAME_SIZE, 0xF);
-            if(!success)
-                LOG("failed to descramble sector {}", i);
-            ofs0.write((char *)sector0.data(), bytesRead);
-            ofs1.write((char *)sector1.data(), bytesRead);
-            ofs2.write((char *)sector2.data(), bytesRead);
-            ofs3.write((char *)sector3.data(), bytesRead);
-            ofs4.write((char *)sector4.data(), bytesRead);
-            ofs5.write((char *)sector5.data(), bytesRead);
-            ofs6.write((char *)sector6.data(), bytesRead);
-            ofs7.write((char *)sector7.data(), bytesRead);
-            ofs8.write((char *)sector8.data(), bytesRead);
-            ofs9.write((char *)sector9.data(), bytesRead);
-            ofsA.write((char *)sectorA.data(), bytesRead);
-            ofsB.write((char *)sectorB.data(), bytesRead);
-            ofsC.write((char *)sectorC.data(), bytesRead);
-            ofsD.write((char *)sectorD.data(), bytesRead);
-            ofsE.write((char *)sectorE.data(), bytesRead);
-            ofsF.write((char *)sectorF.data(), bytesRead);
+            ofs.write((char *)sector.data(), bytesRead);
+            ifs.read((char *)sector.data(), sector.size());
             i += 1;
+            scrambler.descramble(sector.data(), 0x030000 + i, DATA_FRAME_SIZE, key);
+            bytesRead = ifs.gcount();
         }
     }
 

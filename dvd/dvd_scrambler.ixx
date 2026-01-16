@@ -25,7 +25,7 @@ namespace gpsxre
 export class DVD_Scrambler
 {
 public:
-    bool descramble(uint8_t *sector, uint32_t psn, uint32_t size = DATA_FRAME_SIZE, std::optional<std::uint32_t> ngd_id = std::nullopt) const
+    bool descramble(uint8_t *sector, uint32_t psn, uint32_t size = DATA_FRAME_SIZE, std::optional<std::uint8_t> key = std::nullopt) const
     {
         bool unscrambled = false;
 
@@ -43,11 +43,11 @@ public:
         uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
 
         // custom XOR table offset for user data area
-        if(ngd_id.has_value() && psn >= 0x030000 && psn <= 0x0DE0B0)
+        if(key.has_value() && psn >= 0x030000 && psn <= 0x0DE0B0)
         {
             if(psn >= 0x030010)
             {
-                uint32_t shift = ngd_id.value() ^ (psn >> 4 & 0xF);
+                uint32_t shift = key.value() ^ (psn >> 4 & 0xF);
                 offset = (shift + 7.5) * FORM1_DATA_SIZE + (shift > 8);
             }
             else
