@@ -139,27 +139,27 @@ export int redumper_debug(Context &ctx, Options &options)
         DVD_Scrambler scrambler;
         auto frame = (DataFrame *)sector0.data();
         LOG("0:");
-        if(scrambler.descramble(sector0.data(), 0x030000, DATA_FRAME_SIZE, 0x9))
+        if(scrambler.descramble(sector0.data(), 0x030000, DATA_FRAME_SIZE, 0xD))
             LOG("  calc EDC: {}", DVD_EDC().update(sector0.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled0.sector", sector0);
         LOG("1:");
-        if(scrambler.descramble(sector1.data(), 0x030010, DATA_FRAME_SIZE, 0x9))
+        if(scrambler.descramble(sector1.data(), 0x030010, DATA_FRAME_SIZE, 0xD))
             LOG("  calc EDC: {:X}", DVD_EDC().update(sector1.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled1.sector", sector1);
         LOG("11:");
-        if(scrambler.descramble(sector11.data(), 0x030011, DATA_FRAME_SIZE, 0x9))
+        if(scrambler.descramble(sector11.data(), 0x030011, DATA_FRAME_SIZE, 0xE))
             LOG("  calc EDC: {:X}", DVD_EDC().update(sector11.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled11.sector", sector11);
         LOG("2:");
-        if(scrambler.descramble(sector2.data(), 0x030020, DATA_FRAME_SIZE, 0x9))
+        if(scrambler.descramble(sector2.data(), 0x030020, DATA_FRAME_SIZE, 0xF))
             LOG("  calc EDC: {:X}", DVD_EDC().update(sector2.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled2.sector", sector2);
         LOG("3:");
-        if(scrambler.descramble(sector3.data(), 0x030030, DATA_FRAME_SIZE, 0x9))
+        if(scrambler.descramble(sector3.data(), 0x030030, DATA_FRAME_SIZE, 0xC))
             LOG("  calc EDC: {:X}", DVD_EDC().update(sector3.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled3.sector", sector3);
         LOG("100:");
-        if(scrambler.descramble(sector100.data(), 0x030063, DATA_FRAME_SIZE, 0x9))
+        if(scrambler.descramble(sector100.data(), 0x030063, DATA_FRAME_SIZE, 0xB))
             LOG("  calc EDC: {:X}", DVD_EDC().update(sector100.data(), offsetof(DataFrame, edc)).final());
         write_vector("descrambled100.sector", sector100);
     }
