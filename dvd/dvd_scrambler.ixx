@@ -116,7 +116,7 @@ private:
                 shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
             }
 
-            table[group * FORM1_DATA_SIZE + i] = (uint8_t)shift_register;
+            table[ECC_FRAMES * FORM1_DATA_SIZE + FORM1_DATA_SIZE + i] = (uint8_t)shift_register;
         }
 
         return table;
