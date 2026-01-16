@@ -202,22 +202,22 @@ export int redumper_debug(Context &ctx, Options &options)
             scrambler.descramble(sectorD.data(), 0x030000 + i, DATA_FRAME_SIZE, 0xD);
             scrambler.descramble(sectorE.data(), 0x030000 + i, DATA_FRAME_SIZE, 0xE);
             scrambler.descramble(sectorF.data(), 0x030000 + i, DATA_FRAME_SIZE, 0xF);
-            ofs0.write(sector0.data(), bytesRead);
-            ofs1.write(sector1.data(), bytesRead);
-            ofs2.write(sector2.data(), bytesRead);
-            ofs3.write(sector3.data(), bytesRead);
-            ofs4.write(sector4.data(), bytesRead);
-            ofs5.write(sector5.data(), bytesRead);
-            ofs6.write(sector6.data(), bytesRead);
-            ofs7.write(sector7.data(), bytesRead);
-            ofs8.write(sector8.data(), bytesRead);
-            ofs9.write(sector9.data(), bytesRead);
-            ofsA.write(sectorA.data(), bytesRead);
-            ofsB.write(sectorB.data(), bytesRead);
-            ofsC.write(sectorC.data(), bytesRead);
-            ofsD.write(sectorD.data(), bytesRead);
-            ofsE.write(sectorE.data(), bytesRead);
-            ofsF.write(sectorF.data(), bytesRead);
+            ofs0.write((char *)sector0.data(), bytesRead);
+            ofs1.write((char *)sector1.data(), bytesRead);
+            ofs2.write((char *)sector2.data(), bytesRead);
+            ofs3.write((char *)sector3.data(), bytesRead);
+            ofs4.write((char *)sector4.data(), bytesRead);
+            ofs5.write((char *)sector5.data(), bytesRead);
+            ofs6.write((char *)sector6.data(), bytesRead);
+            ofs7.write((char *)sector7.data(), bytesRead);
+            ofs8.write((char *)sector8.data(), bytesRead);
+            ofs9.write((char *)sector9.data(), bytesRead);
+            ofsA.write((char *)sectorA.data(), bytesRead);
+            ofsB.write((char *)sectorB.data(), bytesRead);
+            ofsC.write((char *)sectorC.data(), bytesRead);
+            ofsD.write((char *)sectorD.data(), bytesRead);
+            ofsE.write((char *)sectorE.data(), bytesRead);
+            ofsF.write((char *)sectorF.data(), bytesRead);
             i += 1;
         }
     }
