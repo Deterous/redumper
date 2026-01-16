@@ -79,7 +79,7 @@ public:
 private:
     static constexpr auto _TABLE = []()
     {
-        std::array<uint8_t, FORM1_DATA_SIZE * (ECC_FRAMES + 1)> table{};
+        std::array<uint8_t, FORM1_DATA_SIZE * ECC_FRAMES + FORM1_DATA_SIZE> table{};
 
         // ECMA-267
 
