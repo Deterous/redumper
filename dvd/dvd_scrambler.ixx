@@ -91,7 +91,7 @@ private:
             table[group * FORM1_DATA_SIZE] = (uint8_t)shift_register;
 
             // extend table to account for custom offsets
-            uint16_t group_length = group == ECC_FRAMES - 1 ? 2 * FORM1_DATA_SIZE : FORM1_DATA_SIZE;
+            // uint16_t group_length = group == ECC_FRAMES - 1 ? 2 * FORM1_DATA_SIZE : FORM1_DATA_SIZE;
 
             for(uint16_t i = 1; i < group_length; ++i)
             {
