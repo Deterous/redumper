@@ -48,8 +48,6 @@ public:
             if(psn >= 0x030010)
             {
                 uint32_t shift = ngd_id.value() ^ (psn >> 4 & 0xF);
-                if(shift == 8)
-                    shift = -1;
                 offset = (shift + 7.5) * FORM1_DATA_SIZE + (shift > 8);
             }
             else
@@ -75,16 +73,13 @@ public:
         uint32_t main_data_offset = offsetof(DataFrame, main_data);
         uint32_t end_byte = size < offsetof(DataFrame, edc) ? size : offsetof(DataFrame, edc);
         for(uint32_t i = main_data_offset; i < end_byte; ++i)
-        {
-            uint32_t index = (offset + i - main_data_offset) % (FORM1_DATA_SIZE * ECC_FRAMES);
-            output[i] = data[i] ^ _TABLE[index];
-        }
+            output[i] = data[i] ^ _TABLE[offset + i - main_data_offset];
     }
 
 private:
     static constexpr auto _TABLE = []()
     {
-        std::array<uint8_t, FORM1_DATA_SIZE * ECC_FRAMES> table{};
+        std::array<uint8_t, FORM1_DATA_SIZE * (ECC_FRAMES + 1)> table{};
 
         // ECMA-267
 
@@ -106,6 +101,24 @@ private:
                 }
 
                 table[group * FORM1_DATA_SIZE + i] = (uint8_t)shift_register;
+            }
+
+            // extend table for custom offsets
+            if(group == ECC_FRAMES - 1)
+            {
+                group += 1;
+                for(uint16_t i = 0; i < FORM1_DATA_SIZE; ++i)
+                {
+                    for(uint8_t b = 0; b < CHAR_BIT; ++b)
+                    {
+                        // new LSB = b14 XOR b10
+                        bool lsb = (shift_register >> 14 & 1) ^ (shift_register >> 10 & 1);
+                        // 15-bit register requires masking MSB
+                        shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
+                    }
+
+                    table[group * FORM1_DATA_SIZE + i] = (uint8_t)shift_register;
+                }
             }
         }
 
