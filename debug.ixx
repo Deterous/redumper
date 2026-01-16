@@ -131,8 +131,8 @@ export int redumper_debug(Context &ctx, Options &options)
 
     if(1)
     {
-        std::ifstream ifs(image_prefix + ".scrambled", std::ifstream::binary);
-        std::ofstream ofs(image_prefix + ".descrambled", std::ofstream::binary);
+        std::ifstream ifs(image_prefix + ".iso", std::ifstream::binary);
+        std::ofstream ofs(image_prefix + ".dec.iso", std::ofstream::binary);
         DVD_Scrambler scrambler;
         std::vector<uint8_t> sector(2064);
         ifs.read((char *)sector.data(), sector.size());
