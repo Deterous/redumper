@@ -143,7 +143,7 @@ export int redumper_debug(Context &ctx, Options &options)
         int i = 0;
         while(bytesRead == sector.size())
         {
-            ofs.write((char *)sector.data(), bytesRead);
+            ofs.write((char *)(sector.data() + 6), FORM1_DATA_SIZE);
             ifs.read((char *)sector.data(), sector.size());
             i += 1;
             scrambler.descramble(sector.data(), 0x030000 + i, DATA_FRAME_SIZE, key);
