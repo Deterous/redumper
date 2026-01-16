@@ -46,7 +46,7 @@ public:
         if(ngd_id.has_value() && psn >= 0x030000 && psn <= 0x0DE0B0)
         {
             if(psn >= 0x030010)
-                offset = ((ngd_id.value() ^ (psn >> 4 & 0xF)) + 7.5) * FORM1_DATA_SIZE + (ngd_id.value() > 8);
+                offset = ((ngd_id.value() ^ (psn >> 4 & 0xF)) + 7.5) * FORM1_DATA_SIZE; // + (ngd_id.value() > 8);
             else
                 offset += 7.5 * FORM1_DATA_SIZE;
         }
