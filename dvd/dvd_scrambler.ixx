@@ -84,14 +84,16 @@ private:
         // ECMA-267
 
         std::array<uint16_t, ECC_FRAMES> iv = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
-        uint16_t shift_register;
         for(uint8_t group = 0; group < ECC_FRAMES; ++group)
         {
-            shift_register = iv[group];
+            uint16_t shift_register = iv[group];
 
             table[group * FORM1_DATA_SIZE] = (uint8_t)shift_register;
 
-            for(uint16_t i = 1; i < FORM1_DATA_SIZE; ++i)
+            // extend table to account for custom offsets
+            uint16_t group_length = group == ECC_FRAMES - 1 ? 2 * FORM1_DATA_SIZE : FORM1_DATA_SIZE;
+
+            for(uint16_t i = 1; i < group_length; ++i)
             {
                 for(uint8_t b = 0; b < CHAR_BIT; ++b)
                 {
@@ -103,20 +105,7 @@ private:
 
                 table[group * FORM1_DATA_SIZE + i] = (uint8_t)shift_register;
             }
-        }
-
-        // extend table for custom offsets
-        for(uint16_t i = 0; i < FORM1_DATA_SIZE; ++i)
-        {
-            for(uint8_t b = 0; b < CHAR_BIT; ++b)
-            {
-                // new LSB = b14 XOR b10
-                bool lsb = (shift_register >> 14 & 1) ^ (shift_register >> 10 & 1);
-                // 15-bit register requires masking MSB
-                shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
-            }
-
-            table[ECC_FRAMES * FORM1_DATA_SIZE + FORM1_DATA_SIZE + i] = (uint8_t)shift_register;
+            temp = shift_register;
         }
 
         return table;
