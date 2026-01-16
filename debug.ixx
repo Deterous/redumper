@@ -140,6 +140,7 @@ export int redumper_debug(Context &ctx, Options &options)
         auto bytesRead = ifs.gcount();
         auto sum = std::accumulate(sector.begin() + 12, sector.begin() + 20, 0);
         uint8_t key = ((sum >> 4) ^ sum) & 0x0F;
+        int i = 0;
         while(bytesRead < sector.size())
         {
             ofs.write((char *)sector.data(), bytesRead);

@@ -104,7 +104,7 @@ private:
                 for(uint8_t b = 0; b < CHAR_BIT; ++b)
                 {
                     // new LSB = b14 XOR b10
-                    bool lsb = (shift_register >> 14 & 1) ^ (shift_register >> 10 & 1);
+                    auto lsb = (shift_register >> 14 & 1) ^ (shift_register >> 10 & 1);
                     // 15-bit register requires masking MSB
                     shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
                 }
