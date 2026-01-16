@@ -79,7 +79,7 @@ public:
 private:
     static constexpr auto _TABLE = []()
     {
-        std::array<uint8_t, FORM1_DATA_SIZE * 13> table{};
+        std::array<uint8_t, FORM1_DATA_SIZE * ECC_FRAMES> table{};
 
         // ECMA-267
 
@@ -93,7 +93,7 @@ private:
             // extend table to account for custom offsets
             // uint16_t group_length = group == ECC_FRAMES - 1 ? 2 * FORM1_DATA_SIZE : FORM1_DATA_SIZE;
 
-            for(uint16_t i = 1; i < group_length; ++i)
+            for(uint16_t i = 1; i < ECC_FRAMES; ++i)
             {
                 for(uint8_t b = 0; b < CHAR_BIT; ++b)
                 {
