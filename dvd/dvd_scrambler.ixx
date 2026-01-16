@@ -58,8 +58,8 @@ public:
             unscrambled = true;
 
         // if EDC does not match, scramble sector back
-        // if(!unscrambled)
-        // process(sector, sector, offset, size);
+        if(!unscrambled)
+            process(sector, sector, offset, size);
 
         return unscrambled;
     }
