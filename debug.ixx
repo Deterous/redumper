@@ -148,28 +148,28 @@ export int redumper_debug(Context &ctx, Options &options)
         std::ofstream ofsE(image_prefix + ".descrambledE", std::ofstream::binary);
         std::ofstream ofsF(image_prefix + ".descrambledF", std::ofstream::binary);
         DVD_Scrambler scrambler;
-        std::vector<char> sector0(2064);
-        std::vector<char> sector1(2064);
-        std::vector<char> sector2(2064);
-        std::vector<char> sector3(2064);
-        std::vector<char> sector4(2064);
-        std::vector<char> sector5(2064);
-        std::vector<char> sector6(2064);
-        std::vector<char> sector7(2064);
-        std::vector<char> sector8(2064);
-        std::vector<char> sector9(2064);
-        std::vector<char> sectorA(2064);
-        std::vector<char> sectorB(2064);
-        std::vector<char> sectorC(2064);
-        std::vector<char> sectorD(2064);
-        std::vector<char> sectorE(2064);
-        std::vector<char> sectorF(2064);
+        std::vector<uint8_t> sector0(2064);
+        std::vector<uint8_t> sector1(2064);
+        std::vector<uint8_t> sector2(2064);
+        std::vector<uint8_t> sector3(2064);
+        std::vector<uint8_t> sector4(2064);
+        std::vector<uint8_t> sector5(2064);
+        std::vector<uint8_t> sector6(2064);
+        std::vector<uint8_t> sector7(2064);
+        std::vector<uint8_t> sector8(2064);
+        std::vector<uint8_t> sector9(2064);
+        std::vector<uint8_t> sectorA(2064);
+        std::vector<uint8_t> sectorB(2064);
+        std::vector<uint8_t> sectorC(2064);
+        std::vector<uint8_t> sectorD(2064);
+        std::vector<uint8_t> sectorE(2064);
+        std::vector<uint8_t> sectorF(2064);
         uint32_t i = 0;
         while(true)
         {
-            ifs.read(sector0.data(), sector0.size());
+            ifs.read((char)sector0.data(), sector0.size());
             auto bytesRead = ifs.gcount();
-            if(bytesRead <= sector.size())
+            if(bytesRead <= sector0.size())
                 break;
             sector1 = sector0;
             sector2 = sector0;
