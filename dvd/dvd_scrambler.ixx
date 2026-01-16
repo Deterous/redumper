@@ -75,16 +75,18 @@ public:
         for(uint32_t i = main_data_offset; i < end_byte; ++i)
         {
             uint32_t index = offset + i - main_data_offset;
-            if(index >= (FORM1_DATA_SIZE * ECC_FRAMES))
-                index -= FORM1_DATA_SIZE * ECC_FRAMES - 1;
+            // non-standard wrap when crossing table end
+            if(index >= _TABLE_LENGTH && offset < _TABLE_LENGTH)
+                index -= (FORM1_DATA_SIZE * ECC_FRAMES - 1);
             output[i] = data[i] ^ _TABLE[index];
         }
     }
 
 private:
+    static constexpr uint32_t _TABLE_LENGTH = FORM1_DATA_SIZE * ECC_FRAMES;
     static constexpr auto _TABLE = []()
     {
-        std::array<uint8_t, FORM1_DATA_SIZE * ECC_FRAMES> table{};
+        std::array<uint8_t, _TABLE_LENGTH> table{};
 
         // ECMA-267
 
