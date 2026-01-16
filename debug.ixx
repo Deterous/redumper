@@ -169,7 +169,7 @@ export int redumper_debug(Context &ctx, Options &options)
         {
             ifs.read((char *)sector0.data(), sector0.size());
             auto bytesRead = ifs.gcount();
-            if(bytesRead <= sector0.size())
+            if(bytesRead < sector0.size())
                 break;
             sector1 = sector0;
             sector2 = sector0;
