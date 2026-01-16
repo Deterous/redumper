@@ -167,7 +167,7 @@ export int redumper_debug(Context &ctx, Options &options)
         uint32_t i = 0;
         while(true)
         {
-            ifs.read((char*)sector0.data(), sector0.size());
+            ifs.read((char *)sector0.data(), sector0.size());
             auto bytesRead = ifs.gcount();
             if(bytesRead <= sector0.size())
                 break;
