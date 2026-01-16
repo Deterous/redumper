@@ -138,7 +138,7 @@ export int redumper_debug(Context &ctx, Options &options)
         ifs.read((char *)sector.data(), sector.size());
         scrambler.descramble(sector.data(), 0x030000, DATA_FRAME_SIZE, 0);
         auto bytesRead = ifs.gcount();
-        auto sum = std::accumulate(sector.begin() + 12, sector.begin() + 20, 0);
+        auto sum = std::accumulate(sector.begin() + 6, sector.begin() + 14, 0);
         uint8_t key = ((sum >> 4) ^ sum) & 0x0F;
         int i = 0;
         while(bytesRead < sector.size())
