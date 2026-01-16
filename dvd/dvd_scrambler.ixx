@@ -61,8 +61,8 @@ public:
             unscrambled = true;
 
         // if EDC does not match, scramble sector back
-        if(!unscrambled)
-            process(sector, sector, offset, size);
+        // if(!unscrambled)
+        // process(sector, sector, offset, size);
 
         return unscrambled;
     }
@@ -74,10 +74,7 @@ public:
         uint32_t end_byte = size < offsetof(DataFrame, edc) ? size : offsetof(DataFrame, edc);
         for(uint32_t i = main_data_offset; i < end_byte; ++i)
         {
-            // non-standard wrap-around (last byte = first byte)
-            uint32_t index = (offset + i - main_data_offset) % (FORM1_DATA_SIZE * ECC_FRAMES - 1);
-            if((offset + i - main_data_offset) > (FORM1_DATA_SIZE * ECC_FRAMES))
-                index += 1;
+            uint32_t index = (offset + i - main_data_offset) % (FORM1_DATA_SIZE * ECC_FRAMES);
             output[i] = data[i] ^ _TABLE[index];
         }
     }
