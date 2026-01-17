@@ -446,7 +446,7 @@ export SPTD::Status cmd_write_buffer(SPTD &sptd, const uint8_t *data, uint32_t d
 
 
 export SPTD::Status cmd_read_omnidrive(SPTD &sptd, uint8_t *buffer, uint32_t block_size, int32_t address, uint32_t transfer_length, OmniDrive_DiscType disc_type, bool raw_addressing = false,
-    bool fua = false, bool descramble = false, uint8_t subchannels = false, uint8_t c2 = false)
+    bool fua = false, bool descramble = false, OmniDrive_Subchannels subchannels = false, bool c2 = false)
 {
     CDB12_ReadOmniDrive cdb = {};
     cdb.operation_code = (uint8_t)CDB_OperationCode::READ_OMNIDRIVE;
@@ -454,8 +454,8 @@ export SPTD::Status cmd_read_omnidrive(SPTD &sptd, uint8_t *buffer, uint32_t blo
     cdb.raw_addressing = raw_addressing ? 1 : 0;
     cdb.fua = fua ? 1 : 0;
     cdb.descramble = descramble ? 1 : 0;
-    cdb.subchannels = subchannels;
-    cdb.c2 = c2;
+    cdb.subchannels = (uint8_t)subchannels;
+    cdb.c2 = c2 ? 1 : 0;
     *(int32_t *)cdb.address = endian_swap(address);
     *(uint32_t *)cdb.transfer_blocks = endian_swap(transfer_length);
 

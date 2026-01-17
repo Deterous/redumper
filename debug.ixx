@@ -147,7 +147,10 @@ export int redumper_debug(Context &ctx, Options &options)
             ofs.write((char *)(sector.data() + 6), FORM1_DATA_SIZE);
             ifs.read((char *)sector.data(), sector.size());
             i += 1;
-            scrambler.descramble(sector.data(), 0x030000 + i, DATA_FRAME_SIZE, key);
+            if(i < 0x10)
+                scrambler.descramble(sector.data(), 0x030000 + i, DATA_FRAME_SIZE);
+            else
+                scrambler.descramble(sector.data(), 0x030000 + i, DATA_FRAME_SIZE, key);
             bytesRead = ifs.gcount();
         }
     }

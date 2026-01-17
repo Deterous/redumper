@@ -26,7 +26,6 @@ export constexpr uint32_t DVD_LBA_START = -0x30000;
 export constexpr uint32_t DATA_FRAME_SIZE = 2064;
 export constexpr uint32_t RECORDING_FRAME_SIZE = 2366;
 export constexpr uint32_t ECC_FRAMES = 16;
-export constexpr uint32_t ECC_BLOCK_SIZE = RECORDING_FRAME_SIZE * ECC_FRAMES;
 
 
 
@@ -71,13 +70,6 @@ export struct RecordingFrame
 
     Row row[12];
     uint8_t parity_outer[182];
-};
-
-
-export struct MediatekCacheFrame
-{
-    RecordingFrame recording_frame;
-    uint8_t unknown[18];
 };
 
 

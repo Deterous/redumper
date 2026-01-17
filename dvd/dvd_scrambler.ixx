@@ -43,7 +43,8 @@ public:
         uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
 
         // custom XOR table offset for user data area
-        if(key.has_value() && psn >= 0x030000 && psn <= 0x0DE0B0)
+        // TODO: check if not in lead-out
+        if(key.has_value() && psn >= 0x030000)
         {
             if(psn >= 0x030010)
             {

@@ -269,6 +269,14 @@ export enum class OmniDrive_DiscType : uint8_t
 };
 
 
+export enum class OmniDrive_Subchannels : uint8_t
+{
+    NONE,
+    ENABLED,
+    AUDIO_SUBQ
+};
+
+
 export struct CMD_ParameterListHeader
 {
     uint16_t data_length;
