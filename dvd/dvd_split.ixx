@@ -128,7 +128,7 @@ void descramble_nintendo(Context &ctx, Options &options)
     std::filesystem::path scram_path(image_prefix + ".iso");
     if(!std::filesystem::exists(scram_path))
         return;
-    
+
     std::ofstream ofs(image_prefix + ".dec.iso", std::ofstream::binary);
     DVD_Scrambler scrambler;
     std::vector<uint8_t> sector(DATA_FRAME_SIZE);
