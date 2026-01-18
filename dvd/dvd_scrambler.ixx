@@ -79,31 +79,16 @@ private:
 
         // ECMA-267
 
-        for(uint8_t group = 0; group < ECC_FRAMES; ++group)
+        for(uint8_t group = 0; group < 2 * ECC_FRAMES; ++group)
         {
-            uint16_t shift_register = iv[group];
+            uint16_t shift_register = iv[group % ECC_FRAMES];
 
-            table[group * FORM1_DATA_SIZE] = (uint8_t)shift_register;
+            // extend table to allow for custom offsets
+            bool extended_table = group >= ECC_FRAMES;
+            if(!extended_table)
+                table[group * FORM1_DATA_SIZE] = (uint8_t)shift_register;
 
-            for(uint16_t i = 1; i < FORM1_DATA_SIZE; ++i)
-            {
-                for(uint8_t b = 0; b < CHAR_BIT; ++b)
-                {
-                    // new LSB = b14 XOR b10
-                    auto lsb = (shift_register >> 14 & 1) ^ (shift_register >> 10 & 1);
-                    // 15-bit register requires masking MSB
-                    shift_register = ((shift_register << 1) & 0x7FFF) | lsb;
-                }
-
-                table[group * FORM1_DATA_SIZE + i] = (uint8_t)shift_register;
-            }
-        }
-        // extend table for custom offsets
-        for(uint8_t group = ECC_FRAMES; group < ECC_FRAMES * 2; ++group)
-        {
-            uint16_t shift_register = iv[group - ECC_FRAMES];
-
-            for(uint16_t i = 0; i < FORM1_DATA_SIZE; ++i)
+            for(uint16_t i = !extended_table; i < FORM1_DATA_SIZE; ++i)
             {
                 for(uint8_t b = 0; b < CHAR_BIT; ++b)
                 {
