@@ -146,8 +146,8 @@ export int redumper_debug(Context &ctx, Options &options)
         {
             ofs.write((char *)(sector.data() + 6), FORM1_DATA_SIZE);
             ifs.read((char *)sector.data(), sector.size());
-            i += 1;
-            if(i < 0x10)
+            psn += 1;
+            if(psn < 0x10)
                 scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, psn >> 4 & 0xF);
             else
                 scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, key);
