@@ -72,16 +72,17 @@ public:
     }
 
 private:
-    static constinit auto _TABLE = []()
+    static constexpr auto _TABLE = []()
     {
         std::array<uint8_t, 2 * FORM1_DATA_SIZE * ECC_FRAMES> table{};
-        std::array<uint16_t, ECC_FRAMES> iv = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
+        const std::array<uint16_t, ECC_FRAMES> iv = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
 
         // ECMA-267
 
+        uint16_t shift_register;
         for(uint8_t group = 0; group < ECC_FRAMES; ++group)
         {
-            uint16_t shift_register = iv[group];
+            shift_register = iv[group];
 
             table[group * FORM1_DATA_SIZE] = (uint8_t)shift_register;
 
@@ -101,7 +102,7 @@ private:
         // extend table for custom offsets
         for(uint8_t group = ECC_FRAMES; group < ECC_FRAMES * 2; ++group)
         {
-            uint16_t shift_register = iv[group - ECC_FRAMES];
+            shift_register = iv[group - ECC_FRAMES];
 
             for(uint16_t i = 0; i < FORM1_DATA_SIZE; ++i)
             {
