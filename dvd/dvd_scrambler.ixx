@@ -72,7 +72,6 @@ public:
     }
 
 private:
-    static constexpr auto _TABLE = make_table();
     static consteval auto make_table()
     {
         std::array<uint8_t, 2 * FORM1_DATA_SIZE * ECC_FRAMES> table{};
@@ -120,6 +119,7 @@ private:
 
         return table;
     }
+    static constexpr auto _TABLE = make_table();
 };
 
 }
