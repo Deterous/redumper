@@ -101,7 +101,7 @@ private:
         // extend table for custom offsets
         for(uint8_t group = ECC_FRAMES; group < ECC_FRAMES * 2; ++group)
         {
-            uint16_t shift_register = iv[group];
+            uint16_t shift_register = iv[group - ECC_FRAMES];
 
             for(uint16_t i = 0; i < FORM1_DATA_SIZE; ++i)
             {
