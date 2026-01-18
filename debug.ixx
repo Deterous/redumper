@@ -137,20 +137,20 @@ export int redumper_debug(Context &ctx, Options &options)
         DVD_Scrambler scrambler;
         std::vector<uint8_t> sector(2064);
         ifs.read((char *)sector.data(), sector.size());
-        scrambler.descramble(sector.data(), 0x030000, DATA_FRAME_SIZE, 0);
+        int psn = 0x030000;
+        scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, 0);
         auto bytesRead = ifs.gcount();
         auto sum = std::accumulate(sector.begin() + 6, sector.begin() + 14, 0);
         uint8_t key = ((sum >> 4) ^ sum) & 0xF;
-        int i = 0;
         while(bytesRead == sector.size())
         {
             ofs.write((char *)(sector.data() + 6), FORM1_DATA_SIZE);
             ifs.read((char *)sector.data(), sector.size());
             i += 1;
             if(i < 0x10)
-                scrambler.descramble(sector.data(), 0x030000 + i, DATA_FRAME_SIZE);
+                scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, psn >> 4 & 0xF);
             else
-                scrambler.descramble(sector.data(), 0x030000 + i, DATA_FRAME_SIZE, key);
+                scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, key);
             bytesRead = ifs.gcount();
         }
     }
