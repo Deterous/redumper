@@ -119,7 +119,7 @@ private:
         }
 
         return table;
-    }();
+    }
 };
 
 }
