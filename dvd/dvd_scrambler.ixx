@@ -72,7 +72,7 @@ public:
     }
 
 private:
-    static consteval auto make_table()
+    static consteval std::array<uint8_t, 2 * FORM1_DATA_SIZE * ECC_FRAMES> make_table()
     {
         std::array<uint8_t, 2 * FORM1_DATA_SIZE * ECC_FRAMES> table{};
         const std::array<uint16_t, ECC_FRAMES> iv = { 0x0001, 0x5500, 0x0002, 0x2A00, 0x0004, 0x5400, 0x0008, 0x2800, 0x0010, 0x5000, 0x0020, 0x2001, 0x0040, 0x4002, 0x0080, 0x0005 };
@@ -119,6 +119,7 @@ private:
 
         return table;
     }
+
     static constexpr auto _TABLE = make_table();
 };
 
