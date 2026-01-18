@@ -84,11 +84,13 @@ private:
             uint16_t shift_register = iv[group % ECC_FRAMES];
 
             // extend table to allow for custom offsets
-            bool extended_table = group >= ECC_FRAMES;
-            if(!extended_table)
+            uint16_t i = 1;
+            if(group < ECC_FRAMES)
                 table[group * FORM1_DATA_SIZE] = (uint8_t)shift_register;
+            else
+                i = 0;
 
-            for(uint16_t i = !extended_table; i < FORM1_DATA_SIZE; ++i)
+            for(; i < FORM1_DATA_SIZE; ++i)
             {
                 for(uint8_t b = 0; b < CHAR_BIT; ++b)
                 {
