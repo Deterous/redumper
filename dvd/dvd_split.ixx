@@ -3,6 +3,7 @@ module;
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <numeric>
 #include <string>
 #include <vector>
 #include "throw_line.hh"
