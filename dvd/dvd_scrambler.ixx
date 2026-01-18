@@ -43,11 +43,8 @@ public:
         uint32_t offset = (psn >> 4 & 0xF) * FORM1_DATA_SIZE;
 
         // custom XOR table offset for nintendo
-        // first ECC block has key (psn >> 4 & 0xF)
-        // pressed discs have no key set during lead-in/lead-out
-        // writable discs have constant key 0x9 ?
-        if(key.has_value())
-            offset = ((key.value() ^ (psn >> 4 & 0xF)) + 7.5) * FORM1_DATA_SIZE;
+        if(key)
+            offset = ((*key ^ (psn >> 4 & 0xF)) + 7.5) * FORM1_DATA_SIZE;
 
         // unscramble sector
         process(sector, sector, offset, size);

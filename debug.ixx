@@ -1,5 +1,4 @@
 module;
-#include <array>
 #include <bit>
 #include <cstdint>
 #include <cstring>
@@ -7,7 +6,6 @@ module;
 #include <fstream>
 #include <iostream>
 #include <map>
-#include <numeric>
 #include <set>
 #include <string>
 #include <vector>
@@ -16,7 +14,6 @@ module;
 export module debug;
 
 import cd.cd;
-import cd.cdrom;
 import cd.common;
 import cd.subcode;
 import cd.toc;
@@ -24,10 +21,7 @@ import common;
 import drive;
 import drive.mediatek;
 import dvd.dump;
-import dvd.edc;
 import dvd.xbox;
-import dvd.raw;
-import dvd.scrambler;
 import options;
 import scsi.cmd;
 import scsi.mmc;
@@ -129,31 +123,6 @@ export int redumper_debug(Context &ctx, Options &options)
     std::filesystem::path cue_path(image_prefix + ".cue");
     std::filesystem::path physical_path(image_prefix + ".physical");
     std::filesystem::path sub_path(image_prefix + ".subcode");
-
-    if(1)
-    {
-        std::ifstream ifs(image_prefix + ".iso", std::ifstream::binary);
-        std::ofstream ofs(image_prefix + ".dec.iso", std::ofstream::binary);
-        DVD_Scrambler scrambler;
-        std::vector<uint8_t> sector(2064);
-        ifs.read((char *)sector.data(), sector.size());
-        int psn = 0x030000;
-        scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, 0);
-        auto bytesRead = ifs.gcount();
-        auto sum = std::accumulate(sector.begin() + 6, sector.begin() + 14, 0);
-        uint8_t key = ((sum >> 4) ^ sum) & 0xF;
-        while(bytesRead == sector.size())
-        {
-            ofs.write((char *)(sector.data() + 6), FORM1_DATA_SIZE);
-            ifs.read((char *)sector.data(), sector.size());
-            psn += 1;
-            if(psn < 0x10)
-                scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, psn >> 4 & 0xF);
-            else
-                scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, key);
-            bytesRead = ifs.gcount();
-        }
-    }
 
     if(0)
     {
@@ -336,7 +305,7 @@ export int redumper_debug(Context &ctx, Options &options)
     }
 
     // MEDIATEK cache dump extract
-    if(0)
+    if(1)
     {
         std::vector<uint8_t> cache = read_vector(cache_path);
 

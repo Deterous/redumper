@@ -12,6 +12,8 @@ export module dvd.split;
 import cd.cdrom;
 import common;
 import dvd.xbox;
+import dvd.raw;
+import dvd.scrambler;
 import options;
 import range;
 import rom_entry;
@@ -119,6 +121,40 @@ void generate_extra_xbox(Context &ctx, Options &options)
 }
 
 
+void descramble_nintendo(Context &ctx, Options &options)
+{
+    auto image_prefix = (std::filesystem::path(options.image_path) / options.image_name).string();
+
+    std::filesystem::path scram_path(image_prefix + ".iso");
+    if(std::filesystem::exists(scram_path))
+    {
+        std::ofstream ofs(image_prefix + ".dec.iso", std::ofstream::binary);
+        DVD_Scrambler scrambler;
+        std::vector<uint8_t> sector(DATA_FRAME_SIZE);
+        ifs.read((char *)sector.data(), sector.size());
+        // pressed discs have no key set during lead-in/lead-out
+        int psn = -DVD_LBA_START;
+        scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, 0);
+        auto bytesRead = ifs.gcount();
+        auto sum = std::accumulate(sector.begin() + 6, sector.begin() + 14, 0);
+        uint8_t key = ((sum >> 4) ^ sum) & 0xF;
+        while(bytesRead == sector.size())
+        {
+            ofs.write((char *)(sector.data() + 6), FORM1_DATA_SIZE);
+            ifs.read((char *)sector.data(), sector.size());
+            psn += 1;
+            // first ECC block has key (psn >> 4 & 0xF)
+            if(psn < ECC_FRAMES)
+                scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, psn >> 4 & 0xF);
+            else
+                scrambler.descramble(sector.data(), psn, DATA_FRAME_SIZE, key);
+            bytesRead = ifs.gcount();
+        }
+    }
+
+}
+
+
 export void redumper_split_dvd(Context &ctx, Options &options)
 {
     // generate .dmi, .pfi, .ss if xbox disc
@@ -127,6 +163,10 @@ export void redumper_split_dvd(Context &ctx, Options &options)
     // prevent hash generation for ISO with scsi errors
     if(ctx.dump_errors && ctx.dump_errors->scsi && !options.force_split)
         throw_line("{} scsi errors detected, unable to continue", ctx.dump_errors->scsi);
+
+    // descramble and extract user data from raw nintendo dumps
+    if(ctx.nintendo)
+        descramble_nintendo(ctx, options);
 }
 
 }

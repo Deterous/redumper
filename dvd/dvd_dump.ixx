@@ -520,7 +520,8 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     bool kreon_locked = false;
 
     // TODO: gate only omnidrive drives and detect nintendo disc
-    bool nintendo = true;
+    ctx.nintendo = true;
+    bool nintendo = ctx.nintendo && *ctx.nintendo;
 
     // unlock Kreon drive early, otherwise get capacity will return different value and check for xbox disc will fail
     if(kreon_firmware)
