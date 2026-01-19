@@ -584,8 +584,8 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                     auto &layer_descriptor = (READ_DVD_STRUCTURE_LayerDescriptor &)structure[sizeof(CMD_ParameterListHeader)];
                     sectors_count_physical = sectors_count_physical.value_or(0) + get_dvd_layer_length(layer_descriptor);
 
-                    // nintendo discs have 0xFF book type
-                    if(layer_descriptor[0] == 0xFF)
+                    // nintendo discs have first byte 0xFF
+                    if(structure[sizeof(CMD_ParameterListHeader)] == 0xFF)
                         ctx.nintendo = true;
                 }
 
@@ -783,7 +783,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     const uint32_t sectors_at_once = (dump_mode == DumpMode::REFINE ? 1 : options.dump_read_size);
 
     // TODO: allow raw DVD dumping via option flag
-    bool raw = ctx.nintendo;
+    bool raw = ctx.nintendo && *ctx.nintendo;
 
     uint32_t sector_size = raw ? DATA_FRAME_SIZE : FORM1_DATA_SIZE;
 
@@ -895,7 +895,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
             {
                 SPTD::Status status;
                 if(raw)
-                    status = read_raw(ctx, drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift, sectors_to_read, dump_mode == DumpMode::REFINE && refine_counter);
+                    status = read_raw(ctx, drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift, sectors_to_read, false, dump_mode == DumpMode::REFINE && refine_counter);
                 else
                     status = cmd_read(*ctx.sptd, drive_data.data(), FORM1_DATA_SIZE, lba + lba_shift, sectors_to_read, dump_mode == DumpMode::REFINE && refine_counter);
 
