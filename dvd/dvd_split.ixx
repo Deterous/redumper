@@ -145,13 +145,29 @@ void descramble(Context &ctx, Options &options)
     uint32_t main_data_offset = offsetof(DataFrame, main_data);
 
     bool nintendo = ctx.nintendo && *ctx.nintendo;
+    if(!nintendo)
+    {
+        std::filesystem::path physical_path(image_prefix + ".physical");
+        if(std::filesystem::exists(physical_path))
+        {
+            auto physical = read_vector(physical_path);
+            if(!physical.empty() && physical.size() == FORM1_DATA_SIZE + 4)
+            {
+                if(physical[sizeof(CMD_ParameterListHeader)] == 0xFF)
+                    nintendo = true;
+            }
+        }
+    }
+
     if(nintendo)
     {
         main_data_offset = offsetof(DataFrame, cpr_mai);
         raw_fs.read((char *)sector.data(), sector.size());
         bytesRead = raw_fs.gcount();
+        LOG("bytesRead {}", bytesRead);
         if(bytesRead != sector.size())
             return;
+        LOG("after");
         success = scrambler.descramble(sector.data(), psn, key);
         if(!success)
             LOG("warning: descramble failed (LBA: {})", psn + DVD_LBA_START);
@@ -165,8 +181,10 @@ void descramble(Context &ctx, Options &options)
     {
         raw_fs.read((char *)sector.data(), sector.size());
         bytesRead = raw_fs.gcount();
+        LOG("bytesRead {}", bytesRead);
         if(bytesRead == sector.size())
             return;
+        LOG("after");
         psn += 1;
         // first ECC block has key (psn >> 4 & 0xF)
         // pressed discs have no key set during lead-in/lead-out
@@ -191,8 +209,7 @@ export void redumper_split_dvd(Context &ctx, Options &options)
         throw_line("{} scsi errors detected, unable to continue", ctx.dump_errors->scsi);
 
     // descramble and extract user data from raw nintendo dumps
-    if(options.raw_dvd || (ctx.nintendo && *ctx.nintendo))
-        descramble(ctx, options);
+    descramble(ctx, options);
 }
 
 }
