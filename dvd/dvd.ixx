@@ -1,20 +1,13 @@
 module;
 #include <cstdint>
 #include <cstring>
-#include <filesystem>
-#include <fstream>
-#include <vector>
 #include "throw_line.hh"
 
 export module dvd;
 
 import cd.cdrom;
 import common;
-import drive.mediatek;
-import options;
-import scsi.sptd;
 import utils.endian;
-import utils.file_io;
 import utils.galois;
 
 
