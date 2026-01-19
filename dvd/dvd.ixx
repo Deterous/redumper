@@ -6,7 +6,7 @@ module;
 #include <vector>
 #include "throw_line.hh"
 
-export module dvd.raw;
+export module dvd;
 
 import cd.cdrom;
 import common;
