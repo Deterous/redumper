@@ -134,13 +134,11 @@ void descramble(Context &ctx, Options &options)
     std::ifstream raw_fs(raw_path, std::ofstream::binary);
     std::ofstream iso_fs(iso_path, std::ofstream::binary);
 
-
-    std::vector<uint8_t> sector(DATA_FRAME_SIZE);
-    
     // TODO: descramble lead-in sectors, save to separate file
     int32_t psn = -DVD_LBA_START;
     std::optional<std::uint8_t> key = std::nullopt;
     DVD_Scrambler scrambler;
+    std::vector<uint8_t> sector(DATA_FRAME_SIZE);
     // TODO: quit early if descramble fails, unless --force-split flag?
     bool success;
     std::streamsize bytesRead;
