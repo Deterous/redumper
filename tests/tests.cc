@@ -11,6 +11,7 @@ import cd.scrambler;
 import crc.crc;
 import crc.crc16_gsm;
 import crc.crc32;
+import dvd.edc;
 import range;
 import utils.file_io;
 import utils.misc;
@@ -267,9 +268,9 @@ bool test_crc()
 
     // DVD EDC
     auto dvd_edc = DVD_EDC().update((uint8_t *)check_value.data(), check_value.length()).final();
-    auto edc_match = dvd_edc == 0xB27CE117;
-    std::cout << std::format("DVD EDC: 0x{:08X}, {}", dvd_edc, edc_match ? "success" : "failure") << std::endl;
-    if(!edc_match)
+    auto dvd_edc_match = dvd_edc == 0xB27CE117;
+    std::cout << std::format("DVD EDC: 0x{:08X}, {}", dvd_edc, dvd_edc_match ? "success" : "failure") << std::endl;
+    if(!dvd_edc_match)
         success = false;
 
     // CRC reciprocal
