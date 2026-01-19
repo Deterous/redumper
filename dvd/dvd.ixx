@@ -22,7 +22,7 @@ namespace gpsxre
 {
 
 
-export constexpr uint32_t DVD_LBA_START = -0x30000;
+export constexpr int32_t DVD_LBA_START = -0x30000;
 export constexpr uint32_t DATA_FRAME_SIZE = 2064;
 export constexpr uint32_t RECORDING_FRAME_SIZE = 2366;
 export constexpr uint32_t ECC_FRAMES = 0x10;
@@ -43,11 +43,6 @@ export struct IdentificationData
     } sector_info;
 
     uint8_t sector_number[3];
-
-    int32_t psn() const
-    {
-        return (int32_t)((uint32_t(sector_number[0]) << 16) | (uint32_t(sector_number[1]) << 8) | uint32_t(sector_number[2]));
-    }
 };
 
 export struct DataFrame
@@ -71,6 +66,12 @@ export struct RecordingFrame
     Row row[12];
     uint8_t parity_outer[182];
 };
+
+
+export int32_t id_to_psn(IdentificationData id)
+{
+    return endian_swap_from_array<int32_t>(id.sector_number);
+}
 
 
 export bool validate_id(const uint8_t id[6])

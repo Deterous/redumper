@@ -17,8 +17,8 @@ export module dvd.dump;
 import cd.cdrom;
 import common;
 import drive;
+import dvd;
 import dvd.css;
-import dvd.raw;
 import dvd.scrambler;
 import dvd.xbox;
 import filesystem.iso9660;
@@ -891,7 +891,8 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
             {
                 SPTD::Status status;
                 if(nintendo)
-                    status = cmd_read_omnidrive(*ctx.sptd, drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift, sectors_to_read, OmniDrive_DiscType::DVD);
+                    status = cmd_read_omnidrive(*ctx.sptd, drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift, sectors_to_read, OmniDrive_DiscType::DVD, false, false, false,
+                                                OmniDrive_Subchannels::NONE, false);
                 else
                     status = cmd_read(*ctx.sptd, drive_data.data(), FORM1_DATA_SIZE, lba + lba_shift, sectors_to_read, dump_mode == DumpMode::REFINE && refine_counter);
 
