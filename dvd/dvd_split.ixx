@@ -168,7 +168,7 @@ void descramble(Context &ctx, Options &options)
         bytesRead = raw_fs.gcount();
         if(bytesRead != sector.size())
             return;
-        success = scrambler.descramble(sector.data(), psn, key);
+        success = scrambler.descramble(sector.data(), psn, 0);
         if(!success)
             LOG("warning: descramble failed (LBA: {})", psn + DVD_LBA_START);
         iso_fs.write((char *)(sector.data() + main_data_offset), FORM1_DATA_SIZE);
