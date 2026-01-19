@@ -159,15 +159,15 @@ void descramble(Context &ctx, Options &options)
         }
     }
 
+    raw_fs.seekg(-DVD_LBA_START * DATA_FRAME_SIZE);
+
     if(nintendo)
     {
         main_data_offset = offsetof(DataFrame, cpr_mai);
         raw_fs.read((char *)sector.data(), sector.size());
         bytesRead = raw_fs.gcount();
-        LOG("bytesRead {}", bytesRead);
         if(bytesRead != sector.size())
             return;
-        LOG("after");
         success = scrambler.descramble(sector.data(), psn, key);
         if(!success)
             LOG("warning: descramble failed (LBA: {})", psn + DVD_LBA_START);
@@ -181,10 +181,8 @@ void descramble(Context &ctx, Options &options)
     {
         raw_fs.read((char *)sector.data(), sector.size());
         bytesRead = raw_fs.gcount();
-        LOG("bytesRead {}", bytesRead);
-        if(bytesRead == sector.size())
+        if(bytesRead != sector.size())
             return;
-        LOG("after");
         psn += 1;
         // first ECC block has key (psn >> 4 & 0xF)
         // pressed discs have no key set during lead-in/lead-out
