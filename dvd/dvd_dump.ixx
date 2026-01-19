@@ -780,11 +780,6 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     const uint32_t sectors_at_once = (dump_mode == DumpMode::REFINE ? 1 : options.dump_read_size);
 
     bool raw = options.raw_dvd || (ctx.nintendo && *ctx.nintendo);
-    if(raw)
-    {
-        rom_update = false;
-        ctx_fs.search = false;
-    }
 
     uint32_t sector_size = raw ? DATA_FRAME_SIZE : FORM1_DATA_SIZE;
 
@@ -815,6 +810,11 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
 
     ROMEntry rom_entry(iso_path.filename().string());
     bool rom_update = true;
+    if(raw)
+    {
+        rom_update = false;
+        fs_ctx.search = false;
+    }
 
     SignalINT signal;
 
