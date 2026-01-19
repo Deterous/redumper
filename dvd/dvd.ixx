@@ -13,6 +13,7 @@ import common;
 import drive.mediatek;
 import options;
 import scsi.sptd;
+import utils.endian;
 import utils.file_io;
 import utils.galois;
 
