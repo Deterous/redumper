@@ -790,7 +790,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     if(dump_mode == DumpMode::DUMP)
         file_mode |= std::fstream::trunc;
 
-    std::filesystem::path iso_path(image_prefix + raw ? ".raw" : ".iso");
+    std::filesystem::path iso_path(image_prefix + (raw ? ".raw" : ".iso"));
     std::filesystem::path state_path(image_prefix + ".state");
 
     std::fstream fs_iso(iso_path, file_mode);
