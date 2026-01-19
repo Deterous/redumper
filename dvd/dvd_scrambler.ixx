@@ -49,7 +49,7 @@ public:
         // unscramble sector
         process(sector, sector, offset, size);
 
-        if(endian_swap(frame->edc) == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
+        if(frame->edc == DVD_EDC().update(sector, offsetof(DataFrame, edc)).final())
             unscrambled = true;
 
         // if EDC does not match, scramble sector back

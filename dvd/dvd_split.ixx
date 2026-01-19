@@ -186,7 +186,7 @@ void descramble(Context &ctx, Options &options)
         psn += 1;
         // first ECC block has key (psn >> 4 & 0xF)
         // pressed discs have no key set during lead-in/lead-out
-        if(nintendo && psn - DVD_LBA_START < ECC_FRAMES)
+        if(nintendo && psn + DVD_LBA_START < ECC_FRAMES)
             success = scrambler.descramble(sector.data(), psn, psn >> 4 & 0xF);
         else
             success = scrambler.descramble(sector.data(), psn, key);
