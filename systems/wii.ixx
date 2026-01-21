@@ -34,7 +34,7 @@ public:
         std::vector<uint8_t> header_data(FORM1_DATA_SIZE);
         data_reader->read((uint8_t *)header_data.data(), 0, 1);
         auto header = (Header *)header_data.data();
-        os << std::format("  magic: {}", header->disc_version) << std::endl;
+        os << std::format("  magic: {}", header->magic) << std::endl;
         os << std::format("  _WII_MAGIC: {}", _WII_MAGIC) << std::endl;
         if(header->wii_magic != _WII_MAGIC)
             return;
