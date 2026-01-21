@@ -15,7 +15,7 @@ import utils.strings;
 namespace gpsxre
 {
 
-export class SystemGC : public System
+export class SystemWII : public System
 {
 public:
     std::string getName() override
