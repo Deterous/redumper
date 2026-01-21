@@ -47,7 +47,7 @@ public:
     }
 
 private:
-    static constexpr uint32_t _GC_MAGIC = 0x3D9F33C2;
+    static constexpr uint32_t _GC_MAGIC = 0xC2339F3D;
 
     struct Header
     {

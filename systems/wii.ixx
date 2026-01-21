@@ -33,6 +33,8 @@ public:
         std::vector<uint8_t> header_data(sizeof(Header));
         data_reader->read((uint8_t *)&header_data, 0, 1);
         auto header = (Header *)header_data.data();
+        os << std::format("  magic: {}", header->disc_version) << std::endl;
+        os << std::format("  _WII_MAGIC: {}", _WII_MAGIC) << std::endl;
         if(header->wii_magic != _WII_MAGIC)
             return;
 
@@ -47,7 +49,7 @@ public:
     }
 
 private:
-    static constexpr uint32_t _WII_MAGIC = 0xA39E1C5D;
+    static constexpr uint32_t _WII_MAGIC = 0x5D1C9EA3;
 
     struct Header
     {
