@@ -39,12 +39,14 @@ public:
 
         os << std::format("  version: {}", header->disc_version) << std::endl;
 
-        std::string serial = normalize_string(std::string(header->disc_id, offsetof(Header, disc_number)));
+        std::string serial = normalize_string(std::string(&header->disc_id, 6));
         os << std::format("  serial: {}", serial) << std::endl;
 
         std::string title = normalize_string(erase_all(std::string(header->title, sizeof(Header::title)), '\0'));
         os << std::format("  title: {}", title) << std::endl;
-        os << std::format("  disc number: {}", header->disc_number) << std::endl;
+
+        if(header->disc_number)
+            os << std::format("  disc number: {}", header->disc_number) << std::endl;
     }
 
 private:
