@@ -7,6 +7,7 @@ module;
 
 export module systems.gc;
 
+import cd.cdrom;
 import readers.data_reader;
 import utils.strings;
 
@@ -30,8 +31,8 @@ public:
 
     void printInfo(std::ostream &os, DataReader *data_reader, const std::filesystem::path &track_path, bool) const override
     {
-        std::vector<uint8_t> header_data(sizeof(Header));
-        data_reader->read((uint8_t *)&header_data, 0, 1);
+        std::vector<uint8_t> header_data(FORM1_DATA_SIZE);
+        data_reader->read((uint8_t *)header_data.data(), 0, 1);
         auto header = (Header *)header_data.data();
         if(header->magic != _GC_MAGIC)
             return;
