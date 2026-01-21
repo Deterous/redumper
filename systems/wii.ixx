@@ -47,7 +47,7 @@ public:
     }
 
 private:
-    static constexpr uint32_t _WII_MAGIC = 0x5D1C9EA3;
+    static constexpr uint32_t _WII_MAGIC = 0xA39E1C5D;
 
     struct Header
     {
