@@ -270,7 +270,7 @@ export DriveQuery cmd_drive_query(SPTD &sptd)
     drive_query.vendor_specific = normalize_string(std::string((char *)inquiry_data.vendor_specific, sizeof(inquiry_data.vendor_specific)));
 
     std::string reserved5 = normalize_string(std::string((char *)inquiry_data.reserved5, sizeof(inquiry_data.reserved5)));
-    if(!std::strncmp(reserved5, "OmniDrive", 9))
+    if(reserved5.compare(0, 9, "OmniDrive") == 0)
         drive_query.omnidrive = ((uint32_t)inquiry_data.reserved5[9] << 16) | ((uint32_t)inquiry_data.reserved5[10] << 8) | ((uint32_t)inquiry_data.reserved5[11]);
 
     return drive_query;
