@@ -33,17 +33,17 @@ public:
         std::vector<uint8_t> header_data(sizeof(Header));
         data_reader->read((uint8_t *)&header_data, 0, 1);
         auto header = (Header *)header_data.data();
-        if(header.magic != _GC_MAGIC)
+        if(header->magic != _GC_MAGIC)
             return;
 
-        os << std::format("  version: {}", header.disc_version) << std::endl;
+        os << std::format("  version: {}", header->disc_version) << std::endl;
 
-        std::string serial = normalize_string(std::string(header.disc_id, offsetof(Header, disc_number)));
+        std::string serial = normalize_string(std::string(header->disc_id, offsetof(Header, disc_number)));
         os << std::format("  serial: {}", serial) << std::endl;
 
-        std::string title = normalize_string(erase_all(std::string(header.title, sizeof(Header::title)), '\0'));
+        std::string title = normalize_string(erase_all(std::string(header->title, sizeof(Header::title)), '\0'));
         os << std::format("  title: {}", title) << std::endl;
-        os << std::format("  disc number: {}", header.disc_number) << std::endl;
+        os << std::format("  disc number: {}", header->disc_number) << std::endl;
     }
 
 private:
@@ -65,7 +65,7 @@ private:
         uint8_t disable_hash_verification;
         uint8_t disable_disc_encryption;
         uint8_t padding[380];
-    }
+    };
 };
 
 }
