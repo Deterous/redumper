@@ -781,11 +781,11 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
 
     bool raw = false;
     if(ctx.drive_config.omnidrive)
-        raw = options.raw_dvd || (ctx.nintendo && *ctx.nintendo);
-    else if(options.raw_dvd)
+        raw = options.dvd_raw || (ctx.nintendo && *ctx.nintendo);
+    else if(options.dvd_raw)
         LOG("warning: drive not compatible with raw DVD dumping");
 
-    uint32_t sector_size = raw ? DATA_FRAME_SIZE : FORM1_DATA_SIZE;
+    uint32_t sector_size = raw ? sizeof(DataFrame) : FORM1_DATA_SIZE;
 
     std::vector<uint8_t> file_data(sectors_at_once * sector_size);
     std::vector<State> file_state(sectors_at_once);
@@ -794,7 +794,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     if(dump_mode == DumpMode::DUMP)
         file_mode |= std::fstream::trunc;
 
-    std::filesystem::path iso_path(image_prefix + (raw ? ".raw" : ".iso"));
+    std::filesystem::path iso_path(image_prefix + (raw ? ".sdram" : ".iso"));
     std::filesystem::path state_path(image_prefix + ".state");
 
     std::fstream fs_iso(iso_path, file_mode);
@@ -808,7 +808,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     if(dump_mode != DumpMode::DUMP)
     {
         std::vector<State> state_buffer(sectors_count);
-        read_entry(fs_state, (uint8_t *)state_buffer.data(), sizeof(State), raw ? DVD_LBA_START : 0, sectors_count, 0, (uint8_t)State::ERROR_SKIP);
+        read_entry(fs_state, (uint8_t *)state_buffer.data(), sizeof(State), raw ? -DVD_LBA_START : 0, sectors_count, 0, (uint8_t)State::ERROR_SKIP);
         errors.scsi = std::count(state_buffer.begin(), state_buffer.end(), State::ERROR_SKIP);
     }
 
@@ -905,7 +905,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
             {
                 SPTD::Status status;
                 if(raw)
-                    status = read_raw_dvd(ctx, drive_data.data(), DATA_FRAME_SIZE, lba + lba_shift, sectors_to_read, false, dump_mode == DumpMode::REFINE && refine_counter);
+                    status = read_dvd_raw(ctx, drive_data.data(), sizeof(DataFrame), lba + lba_shift, sectors_to_read, false, dump_mode == DumpMode::REFINE && refine_counter);
                 else
                     status = cmd_read(*ctx.sptd, drive_data.data(), FORM1_DATA_SIZE, lba + lba_shift, sectors_to_read, dump_mode == DumpMode::REFINE && refine_counter);
 
