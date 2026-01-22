@@ -368,7 +368,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     int32_t layer0_last = sign_extend<24>(endian_swap(layer0_ld.layer0_end_sector));
     int32_t ss_psn_first = sign_extend<24>(endian_swap(sld.ld.data_start_sector));
 
-    uint32_t l1_padding_length = ss_psn_first - layer0_last - 1;
+    int32_t l1_padding_length = ss_psn_first - layer0_last - 1;
     if(xgd_version(ss_layer0_last) == 3)
         l1_padding_length += 4096;
 
