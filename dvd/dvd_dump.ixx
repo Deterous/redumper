@@ -909,7 +909,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
             {
                 SPTD::Status status;
                 if(raw)
-                    status = read_dvd_raw(ctx, drive_data.data(), sizeof(DataFrame), lba + lba_shift, sectors_to_read, false, dump_mode == DumpMode::REFINE && refine_counter);
+                    status = read_dvd_raw(ctx, drive_data.data(), sizeof(DataFrame), lba + lba_shift, sectors_to_read, dump_mode == DumpMode::REFINE && refine_counter);
                 else
                     status = cmd_read(*ctx.sptd, drive_data.data(), FORM1_DATA_SIZE, lba + lba_shift, sectors_to_read, dump_mode == DumpMode::REFINE && refine_counter);
 
