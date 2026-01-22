@@ -510,8 +510,8 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     else
         image_check_exists(options);
 
-    std::vector<Range<uint32_t>> protection;
-    for(auto const &p : string_to_ranges<uint32_t>(options.skip))
+    std::vector<Range<int32_t>> protection;
+    for(auto const &p : string_to_ranges<int32_t>(options.skip))
         insert_range(protection, { p.first, p.second });
 
     bool kreon_firmware = is_kreon_firmware(ctx.drive_config);
@@ -780,7 +780,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     const uint32_t sectors_at_once = (dump_mode == DumpMode::REFINE ? 1 : options.dump_read_size);
 
     bool raw = false;
-    if(ctx.drive_config.omnidrive)
+    if(is_omnidrive_firmware(ctx.drive_config))
         raw = options.dvd_raw || (ctx.nintendo && *ctx.nintendo);
     else if(options.dvd_raw)
         LOG("warning: drive not compatible with raw DVD dumping");
@@ -855,7 +855,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
         int32_t lba_shift = 0;
 
         // ensure all sectors in the read belong to the same range (skip or non-skip)
-        uint32_t sectors_to_read = std::min(sectors_at_once, lba_end - lba);
+        uint32_t sectors_to_read = std::min(sectors_at_once, (uint32_t)(lba_end - lba));
         auto base_range = find_range(protection, lba);
         for(uint32_t i = 0; i < sectors_to_read; ++i)
         {
