@@ -269,7 +269,7 @@ void merge_xgd3_security_layer_descriptor(SecurityLayerDescriptor &sld, const Se
 }
 
 
-export void get_security_layer_descriptor_ranges(std::vector<Range<uint32_t>> &protection, const std::vector<uint8_t> &security_sector)
+export void get_security_layer_descriptor_ranges(std::vector<Range<int32_t>> &protection, const std::vector<uint8_t> &security_sector)
 {
     auto const &sld = (SecurityLayerDescriptor &)security_sector[0];
 
@@ -327,7 +327,7 @@ export READ_DVD_STRUCTURE_LayerDescriptor get_final_layer_descriptor(const READ_
 }
 
 
-export std::shared_ptr<Context> initialize(std::vector<Range<uint32_t>> &protection, SPTD &sptd, const READ_DVD_STRUCTURE_LayerDescriptor &layer0_ld, uint32_t sectors_count_capacity, bool partial_ss,
+export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protection, SPTD &sptd, const READ_DVD_STRUCTURE_LayerDescriptor &layer0_ld, uint32_t sectors_count_capacity, bool partial_ss,
     bool kreon_custom_firmware)
 {
     std::vector<uint8_t> security_sector(FORM1_DATA_SIZE);

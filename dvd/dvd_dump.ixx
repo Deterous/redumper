@@ -857,7 +857,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
         // ensure all sectors in the read belong to the same range (skip or non-skip)
         uint32_t sectors_to_read = std::min(sectors_at_once, (uint32_t)(lba_end - lba));
         auto base_range = find_range(protection, lba);
-        for(uint32_t i = 0; i < sectors_to_read; ++i)
+        for(int32_t i = 0; i < sectors_to_read; ++i)
         {
             if(base_range != find_range(protection, lba + i))
             {
