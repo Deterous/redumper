@@ -435,7 +435,7 @@ export std::string omnidrive_version(const DriveConfig &drive_config)
     if(!is_omnidrive_firmware(drive_config))
         return "";
 
-    return std::format("{}.{}.{}", drive_config.reserved5[9], drive_config.reserved5[10], drive_config.reserved5[11]);
+    return std::format("{}.{}.{}", (*drive_config.reserved5)[9], (*drive_config.reserved5)[10], (*drive_config.reserved5)[11]);
 }
 
 }

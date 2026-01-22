@@ -835,8 +835,8 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     uint32_t lba_end = sectors_count;
     if(options.lba_end)
     {
-        if(*options.lba_end < 0)
-            throw_line("lba_end must be non-negative");
+        if(!raw && *options.lba_end < 0)
+            throw_line("lba_end must be non-negative for non-raw DVD dumps");
         lba_end = *options.lba_end;
 
         rom_update = false;
