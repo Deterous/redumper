@@ -846,6 +846,8 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
         errors.scsi = std::count(state_buffer.begin(), state_buffer.end(), State::ERROR_SKIP);
     }
 
+    LOG("[DEBUG] LBA Start: {}", lba_start);
+    LOG("[DEBUG] LBA End: {}", lba_end);
     for(int32_t lba = lba_start; lba < lba_end;)
     {
         progress_output(lba, lba_start, lba_end, errors.scsi);
@@ -857,9 +859,9 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
         // ensure all sectors in the read belong to the same range (skip or non-skip)
         uint32_t sectors_to_read = std::min(sectors_at_once, (uint32_t)(lba_end - lba));
         auto base_range = find_range(protection, lba);
-        for(int32_t i = 0; i < sectors_to_read; ++i)
+        for(uint32_t i = 0; i < sectors_to_read; ++i)
         {
-            if(base_range != find_range(protection, lba + i))
+            if(base_range != find_range(protection, lba + (int32_t)i))
             {
                 sectors_to_read = i;
                 break;
@@ -907,6 +909,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                 store = true;
             else
             {
+                LOG_R("[DEBUG] Reading...");
                 SPTD::Status status;
                 if(raw)
                     status = read_dvd_raw(ctx, drive_data.data(), sizeof(DataFrame), lba + lba_shift, sectors_to_read, false, dump_mode == DumpMode::REFINE && refine_counter);
@@ -949,6 +952,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
             {
                 if(dump_mode == DumpMode::DUMP)
                 {
+                    LOG_R("[DEBUG] Storing...");
                     file_data.swap(drive_data);
 
                     write_entry(fs_iso, file_data.data(), sector_size, lba_index, sectors_to_read, 0);
