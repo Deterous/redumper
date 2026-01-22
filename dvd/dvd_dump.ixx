@@ -822,27 +822,31 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
 
     SignalINT signal;
 
-    uint32_t lba_start = 0;
+    int32_t lba_start = 0;
     if(options.lba_start)
     {
         if(!raw && *options.lba_start < 0)
             throw_line("lba_start must be non-negative for non-raw DVD dumps");
+        else if(*options.lba_start < DVD_LBA_START)
+            throw_line("lba_start must be at least {}", DVD_LBA_START);
         lba_start = *options.lba_start;
 
         rom_update = false;
     }
 
-    uint32_t lba_end = sectors_count;
+    int32_t lba_end = sectors_count;
     if(options.lba_end)
     {
         if(!raw && *options.lba_end < 0)
             throw_line("lba_end must be non-negative for non-raw DVD dumps");
+        else if(*options.lba_start < DVD_LBA_START)
+            throw_line("lba_end must be at least {}", DVD_LBA_START);
         lba_end = *options.lba_end;
 
         rom_update = false;
     }
 
-    for(uint32_t lba = lba_start; lba < lba_end;)
+    for(int32_t lba = lba_start; lba < lba_end;)
     {
         progress_output(lba, lba_end, errors.scsi);
 
@@ -885,7 +889,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
         bool read = true;
         bool store = false;
 
-        int32_t lba_index = raw ? lba - DVD_LBA_START : lba;
+        uint32_t lba_index = raw ? lba - DVD_LBA_START : lba;
 
         if(dump_mode == DumpMode::REFINE || dump_mode == DumpMode::VERIFY)
         {
