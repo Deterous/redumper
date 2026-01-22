@@ -455,7 +455,8 @@ export int redumper(Options &options)
 
             if(is_omnidrive_firmware(ctx.drive_config))
                 LOG("custom firmware: OmniDrive v{}", omnidrive_version(ctx.drive_config));
-            if(!drive_is_recommended(ctx.drive_config.vendor_id, ctx.drive_config.product_id, ctx.drive_config.product_revision_level, ctx.drive_config.vendor_specific) && ctx.disc_type == DiscType::CD)
+            if(!drive_is_recommended(ctx.drive_config.vendor_id, ctx.drive_config.product_id, ctx.drive_config.product_revision_level, ctx.drive_config.vendor_specific)
+                && ctx.disc_type == DiscType::CD)
                 LOG("warning: using generic drive");
 
             // set drive speed
