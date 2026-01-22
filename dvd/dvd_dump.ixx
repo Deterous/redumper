@@ -590,7 +590,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                 if(auto &layer0_ld = (READ_DVD_STRUCTURE_LayerDescriptor &)physical_structures.front()[sizeof(CMD_ParameterListHeader)];
                     kreon_firmware && physical_structures.size() == 1 && get_dvd_layer_length(layer0_ld) != sectors_count_capacity)
                 {
-                    xbox = xbox::initialize(protection, *ctx.sptd, layer0_ld, sectors_count_capacity, options.kreon_partial_ss, is_custom_kreon_firmware(ctx.drive_config));
+                    xbox = xbox::initialize(protection, *ctx.sptd, layer0_ld, (int32_t)sectors_count_capacity, options.kreon_partial_ss, is_custom_kreon_firmware(ctx.drive_config));
 
                     if(xbox)
                     {
