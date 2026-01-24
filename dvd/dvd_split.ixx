@@ -184,7 +184,6 @@ void descramble(Context &ctx, Options &options)
             success = scrambler.descramble(sector.data(), psn, psn >> 4 & 0xF);
         else
             success = scrambler.descramble(sector.data(), psn, key);
-        // TODO: quit early if descramble fails, unless --force-split flag?
         if(!success)
             LOG("warning: descramble failed (LBA: {})", psn + DVD_LBA_START);
         iso_fs.write((char *)(sector.data() + main_data_offset), FORM1_DATA_SIZE);
