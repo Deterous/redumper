@@ -383,7 +383,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     {
         ss_message = "invalid";
 
-        // TODO: rebuild SS
+        // TODO: rebuild SS (requires cryptography)
     }
 
     if(kreon)
