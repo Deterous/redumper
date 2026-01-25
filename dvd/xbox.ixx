@@ -11,6 +11,7 @@ export module dvd.xbox;
 
 import cd.cdrom;
 import drive;
+import dvd;
 import range;
 import scsi.cmd;
 import scsi.mmc;
@@ -215,6 +216,7 @@ const std::map<int32_t, uint32_t> XGD_VERSION_MAP = {
 };
 
 constexpr uint32_t XGD_SS_LEADOUT_SECTOR = 4267582;
+constexpr uint32_t XGD_SS_LEADOUT_SECTOR_PSN = 0xFD021E;
 
 
 export uint32_t xgd_version(int32_t layer0_last)
@@ -343,10 +345,13 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     }
     else if(omnidrive)
     {
-        // get SS from leadout
-        auto status = cmd_read(sptd, security_sector.data(), FORM1_DATA_SIZE, XGD_SS_LEADOUT_SECTOR, 1, false);
+        std::vector<uint8_t> security_sector_raw(sizeof(DataFrame));
+        auto status = cmd_read_omnidrive(sptd, security_sector_raw.data(), FORM1_DATA_SIZE, XGD_SS_LEADOUT_SECTOR_PSN, 1, OmniDrive_DiscType::DVD, true, false, false, OmniDrive_Subchannels::NONE,
+            false);
         if(status.status_code)
             LOG("omnidrive: failed to read XGD3 security sector lead-out, SCSI ({})", SPTD::StatusMessage(status));
+        // TODO: If status code or invalid ID or EDC, read from XGD_SS_LEADOUT_SECTOR_PSN + 0x40 (up to 4 retries)
+        std::copy(security_sector_raw.begin() + offsetof(DataFrame, main_data), security_sector_raw.begin() + offsetof(DataFrame, main_data) + FORM1_DATA_SIZE, security_sector.begin());
     }
 
     auto &sld = (SecurityLayerDescriptor &)security_sector[0];
