@@ -216,7 +216,7 @@ const std::map<int32_t, uint32_t> XGD_VERSION_MAP = {
 };
 
 constexpr uint32_t XGD_SS_LEADOUT_SECTOR = 4267582;
-constexpr uint32_t XGD_SS_LEADOUT_SECTOR_PSN = 0xFD021E;
+constexpr uint32_t XGD_SS_LEADOUT_SECTOR_PSN = 0x00FD021E;
 
 
 export uint32_t xgd_version(int32_t layer0_last)
@@ -346,7 +346,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     else if(omnidrive)
     {
         std::vector<uint8_t> raw_sector(sizeof(DataFrame));
-        auto status = cmd_read_omnidrive(sptd, raw_sector.data(), FORM1_DATA_SIZE, XGD_SS_LEADOUT_SECTOR_PSN, 1, OmniDrive_DiscType::DVD, true, false, false, OmniDrive_Subchannels::NONE, false);
+        auto status = cmd_read_omnidrive(sptd, raw_sector.data(), sizeof(DataFrame), XGD_SS_LEADOUT_SECTOR_PSN, 1, OmniDrive_DiscType::DVD, true, false, true, OmniDrive_Subchannels::NONE, false);
         if(status.status_code)
             LOG("omnidrive: failed to read XGD3 security sector lead-out, SCSI ({})", SPTD::StatusMessage(status));
         // TODO: If status code or invalid ID or EDC, read from XGD_SS_LEADOUT_SECTOR_PSN + 0x40 (up to 4 retries)
