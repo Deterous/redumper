@@ -345,13 +345,12 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     }
     else if(omnidrive)
     {
-        std::vector<uint8_t> security_sector_raw(sizeof(DataFrame));
-        auto status = cmd_read_omnidrive(sptd, security_sector_raw.data(), FORM1_DATA_SIZE, XGD_SS_LEADOUT_SECTOR_PSN, 1, OmniDrive_DiscType::DVD, true, false, false, OmniDrive_Subchannels::NONE,
-            false);
+        std::vector<uint8_t> raw_sector(sizeof(DataFrame));
+        auto status = cmd_read_omnidrive(sptd, raw_sector.data(), FORM1_DATA_SIZE, XGD_SS_LEADOUT_SECTOR_PSN, 1, OmniDrive_DiscType::DVD, true, false, false, OmniDrive_Subchannels::NONE, false);
         if(status.status_code)
             LOG("omnidrive: failed to read XGD3 security sector lead-out, SCSI ({})", SPTD::StatusMessage(status));
         // TODO: If status code or invalid ID or EDC, read from XGD_SS_LEADOUT_SECTOR_PSN + 0x40 (up to 4 retries)
-        std::copy(security_sector_raw.begin() + offsetof(DataFrame, main_data), security_sector_raw.begin() + offsetof(DataFrame, main_data) + FORM1_DATA_SIZE, security_sector.begin());
+        std::copy(raw_sector.begin() + offsetof(DataFrame, main_data), raw_sector.begin() + offsetof(DataFrame, main_data) + FORM1_DATA_SIZE, security_sector.begin());
     }
 
     auto &sld = (SecurityLayerDescriptor &)security_sector[0];
