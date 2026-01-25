@@ -333,7 +333,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
 {
     bool kreon = is_kreon_firmware(drive_config);
     bool custom_kreon = kreon && is_custom_kreon_firmware(drive_config);
-    bool omnidrive == is_omnidrive_firmware(drive_config);
+    bool omnidrive = is_omnidrive_firmware(drive_config);
     std::vector<uint8_t> security_sector(FORM1_DATA_SIZE);
 
     if(kreon)
