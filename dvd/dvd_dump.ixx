@@ -514,7 +514,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     for(auto const &p : string_to_ranges<int32_t>(options.skip))
         insert_range(protection, { p.first, p.second });
 
-    bool omnidrive_firwmare = is_omnidrive_firmware(ctx.drive_config);
+    bool omnidrive_firmware = is_omnidrive_firmware(ctx.drive_config);
     bool kreon_firmware = is_kreon_firmware(ctx.drive_config);
     bool kreon_locked = false;
 
@@ -845,7 +845,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     // FIXME: verify memory usage for largest bluray and chunk it if needed
     if(dump_mode != DumpMode::DUMP)
     {
-        uint64_t dumpable_sectors = std::max(lba_end, sectors_count) - std::min(lba_start, 0);
+        uint64_t dumpable_sectors = std::max((int64_t)lba_end, (int64_t)sectors_count) - std::min(lba_start, 0);
         std::vector<State> state_buffer(dumpable_sectors);
         read_entry(fs_state, (uint8_t *)state_buffer.data(), sizeof(State), raw ? (lba_start - DVD_LBA_START) : 0, dumpable_sectors, 0, (uint8_t)State::ERROR_SKIP);
         errors.scsi = std::count(state_buffer.begin(), state_buffer.end(), State::ERROR_SKIP);
