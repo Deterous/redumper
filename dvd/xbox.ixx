@@ -408,25 +408,25 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     {
         // copy cpr_mai key into ss
         if(xgd_version(ss_layer0_last) == 1)
-            std::memcpy((char *)&sld.xgd1.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd1.cpr_mai));
+            std::memcpy(&sld.xgd1.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd1.cpr_mai));
         else if(xgd_version(ss_layer0_last) == 2)
-            std::memcpy((char *)&sld.xgd23.xgd2.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd23.xgd2.cpr_mai));
+            std::memcpy(&sld.xgd23.xgd2.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd23.xgd2.cpr_mai));
         else
-            std::memcpy((char *)&sld.xgd23.xgd3.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd23.xgd3.cpr_mai));
+            std::memcpy(&sld.xgd23.xgd3.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd23.xgd3.cpr_mai));
 
         // descramble ranges
-        std::vector<uint8_t> indices((char *)&sld.ranges_copy, (char *)&sld.ranges_copy + sizeof(sld.ranges_copy));
+        std::vector<uint8_t> indices(security_sector.begin() + 0x730, security_sector.begin() + 0x800);
         for(uint8_t i = 0; i < indices.size(); ++i)
             indices[i] ^= cpr_mai_key[i % 4];
 
-        std::vector<uint8_t> ss_range(sizeof(sld.ranges), 0);
-        std::vector<uint8_t> ss_range_scrambled((char *)&sld.ranges, (char *)&sld.ranges + sizeof(sld.ranges));
+        std::vector<uint8_t> ss_range(207, 0);
+        std::vector<uint8_t> ss_range_scrambled(security_sector.begin() + 0x661, security_sector.begin() + 0x730);
         for(uint8_t i = 0; i + 1 < indices.size(); ++i)
             ss_range[i] = ss_range_scrambled[indices[i]];
 
         // copy ranges into ss
-        std::copy(ss_range.begin(), ss_range.end(), (char *)&sld.ranges);
-        std::copy(ss_range.begin(), ss_range.end(), (char *)&sld.ranges_copy);
+        std::copy(ss_range.begin(), ss_range.end(), security_sector.begin() + 0x661);
+        std::copy(ss_range.begin(), ss_range.end(), security_sector.begin() + 0x730);
     }
 
     LOG("{}: XGD detected (version: {}, security sector: {})", kreon ? "kreon" : "omnidrive", xgd_version(ss_layer0_last), ss_message);
