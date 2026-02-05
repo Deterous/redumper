@@ -82,6 +82,7 @@ export struct DriveConfig
     ReadMethod read_method;
     SectorOrder sector_order;
     Type type;
+    std::optional<std::string> reserved5;
 };
 
 export struct SectorLayout

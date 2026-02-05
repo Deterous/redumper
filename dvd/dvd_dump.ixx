@@ -19,6 +19,8 @@ import common;
 import drive;
 import dvd;
 import dvd.css;
+import dvd.raw;
+import dvd.scrambler;
 import dvd.xbox;
 import filesystem.iso9660;
 import filesystem.udf;
@@ -626,13 +628,17 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                     // calculate physical sectors count based on all layers of physical structures
                     auto &layer_descriptor = (READ_DVD_STRUCTURE_LayerDescriptor &)structure[sizeof(CMD_ParameterListHeader)];
                     sectors_count_physical = sectors_count_physical.value_or(0) + get_dvd_layer_length(layer_descriptor);
+
+                    // nintendo discs have first byte 0xFF
+                    if(structure[sizeof(CMD_ParameterListHeader)] == 0xFF)
+                        ctx.nintendo = true;
                 }
 
                 // XGD physical sector count is only for video partition
                 if(auto &layer0_ld = (READ_DVD_STRUCTURE_LayerDescriptor &)physical_structures.front()[sizeof(CMD_ParameterListHeader)];
-                    kreon_firmware && physical_structures.size() == 1 && get_dvd_layer_length(layer0_ld) != sectors_count_capacity)
+                    (kreon_firmware || omnidrive_firmware) && physical_structures.size() == 1 && get_dvd_layer_length(layer0_ld) != sectors_count_capacity)
                 {
-                    xbox = xbox::initialize(protection, *ctx.sptd, layer0_ld, sectors_count_capacity, options.kreon_partial_ss, is_custom_kreon_firmware(ctx.drive_config));
+                    xbox = xbox::initialize(protection, *ctx.sptd, layer0_ld, sectors_count_capacity, options.kreon_partial_ss, ctx.drive_config);
 
                     if(xbox)
                     {
@@ -662,7 +668,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                     }
                     else
                     {
-                        LOG("kreon: malformed XGD detected, continuing in normal dump mode");
+                        LOG("{}: malformed XGD detected, continuing in normal dump mode", kreon_firmware ? "kreon" : "omnidrive");
                         LOG("");
                     }
                 }
@@ -845,6 +851,11 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
 
     ROMEntry rom_entry(iso_path.filename().string());
     bool rom_update = true;
+    if(raw)
+    {
+        rom_update = false;
+        fs_ctx.search = false;
+    }
 
     // TODO: can be implemented later
     if(raw)
@@ -908,7 +919,7 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
             }
         }
 
-        if(xbox)
+        if(kreon_firmware && xbox)
         {
             if(lba < xbox->lock_lba_start)
                 sectors_to_read = std::min(sectors_to_read, xbox->lock_lba_start - lba);
