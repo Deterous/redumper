@@ -369,8 +369,8 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
             // TODO: also validate EDC ?
             break;
         }
-        std::copy(raw_sector.begin() + offsetof(DataFrame, main_data), raw_sector.begin() + offsetof(DataFrame, main_data) + sizeof(security_sector), security_sector.begin());
-        std::copy(raw_sector.begin() + offsetof(DataFrame, cpr_mai), raw_sector.begin() + offsetof(DataFrame, cpr_mai) + sizeof(cpr_mai_key), cpr_mai_key.begin());
+        std::copy_n(raw_sector.begin() + offsetof(DataFrame, main_data), FORM1_DATA_SIZE, security_sector.begin());
+        std::copy_n(raw_sector.begin() + offsetof(DataFrame, cpr_mai), sizeof(cpr_mai_key), cpr_mai_key.begin());
     }
 
     auto &sld = (SecurityLayerDescriptor &)security_sector[0];
@@ -401,8 +401,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     }
     else if(omnidrive)
     {
-        std::vector<uint8_t> indices((char *)&sld.ranges_copy, (char *)&sld.ranges_copy + sizeof(sld.ranges_copy));
-
+        // copy cpr_mai key into ss
         if(xgd_version(ss_layer0_last) == 1)
             std::memcpy((char *)&sld.xgd1.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd1.cpr_mai));
         else if(xgd_version(ss_layer0_last) == 2)
@@ -410,16 +409,17 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
         else
             std::memcpy((char *)&sld.xgd23.xgd3.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd23.xgd3.cpr_mai));
 
+        // descramble ranges
+        std::vector<uint8_t> indices((char *)&sld.ranges_copy, (char *)&sld.ranges_copy + sizeof(sld.ranges_copy));
         for(uint8_t i = 0; i < indices.size(); ++i)
             indices[i] ^= cpr_mai_key[i % 4];
 
         std::vector<uint8_t> ss_range(sizeof(sld.ranges), 0);
-
         std::vector<uint8_t> ss_range_scrambled((char *)&sld.ranges, (char *)&sld.ranges + sizeof(sld.ranges));
-
         for(uint8_t i = 0; i + 1 < indices.size(); ++i)
             ss_range[i] = ss_range_scrambled[indices[i]];
 
+        // copy ranges into ss
         std::copy(ss_range.begin(), ss_range.end(), (char *)&sld.ranges);
         std::copy(ss_range.begin(), ss_range.end(), (char *)&sld.ranges_copy);
     }
