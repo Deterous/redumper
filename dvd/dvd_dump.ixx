@@ -19,8 +19,6 @@ import common;
 import drive;
 import dvd;
 import dvd.css;
-import dvd.raw;
-import dvd.scrambler;
 import dvd.xbox;
 import filesystem.iso9660;
 import filesystem.udf;
@@ -851,20 +849,6 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
 
     ROMEntry rom_entry(iso_path.filename().string());
     bool rom_update = true;
-    if(raw)
-    {
-        rom_update = false;
-        fs_ctx.search = false;
-    }
-
-    // TODO: can be implemented later
-    if(raw)
-    {
-        rom_update = false;
-        fs_ctx.search = false;
-    }
-
-    // TODO: can be implemented later
     if(raw)
     {
         rom_update = false;

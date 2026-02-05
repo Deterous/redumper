@@ -381,15 +381,31 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     }
     else if(omnidrive)
     {
-        ss_message = "invalid";
+        std::vector<uint8_t> indices(sld.begin() + offsetof(SecurityLayerDescriptor, ranges_copy), sld.begin() + offsetof(SecurityLayerDescriptor, reserved_7FF)));
 
-        // TODO: rebuild SS (requires cryptography)
+        std::vector<uint8_t> cpr_mai;
+        if(xgd_version(ss_layer0_last) == 1)
+            cpr_mai.assign(&sld.xgd1.cpr_mai, &sld.xgd1.cpr_mai + sizeof(sld.xgd1.cpr_mai))
+        else if(xgd_version(ss_layer0_last) == 2)
+            cpr_mai.assign(&sld.xgd23.xgd2.cpr_mai, &sld.xgd23.xgd2.cpr_mai + sizeof(sld.xgd23.xgd2.cpr_mai))
+        else
+            cpr_mai.assign(&sld.xgd23.xgd3.cpr_mai, &sld.xgd23.xgd3.cpr_mai + sizeof(sld.xgd23.xgd3.cpr_mai))
+
+        for(uint8_t i = 0; i < indices.size(); ++i)
+            indices[i] ^= cpr_mai[i % 4];
+
+        std::vector<uint8_t> ss_range(0xCF, 0);
+
+        std::vector<uint8_t> ss_range_scrambled(sld.begin() + offsetof(SecurityLayerDescriptor, ranges), sld.begin() + offsetof(SecurityLayerDescriptor, ranges_copy));
+
+        for(uint8_t i = 0; i + 1 < indices.size(); ++i)
+            ss_range[i] = ss_range_scrambled[indices[i]];
+
+        std::copy(ss_range.begin(), ss_range.end(), sld.begin() + offsetof(SecurityLayerDescriptor, ranges));
+        std::copy(ss_range.begin(), ss_range.end(), sld.begin() + offsetof(SecurityLayerDescriptor, ranges_copy));
     }
 
-    if(kreon)
-        LOG("kreon: XGD detected (version: {}, security sector: {})", xgd_version(ss_layer0_last), ss_message);
-    else if(omnidrive)
-        LOG("omnidrive: XGD detected (version: {}, security sector: {})", xgd_version(ss_layer0_last), ss_message);
+    LOG("{}: XGD detected (version: {}, security sector: {})", kreon ? "kreon" : "omnidrive", xgd_version(ss_layer0_last), ss_message);
     LOG("");
 
     int32_t psn_first = sign_extend<24>(endian_swap(layer0_ld.data_start_sector));
@@ -401,10 +417,9 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
         l1_padding_length += 4096;
 
     // extract security sector ranges from security sector
-    if(kreon) // TODO: Don't gate this when omnidrive SS is rebuilt properly
-        get_security_layer_descriptor_ranges(protection, security_sector);
+    get_security_layer_descriptor_ranges(protection, security_sector);
 
-    // append L1 padding to skip ranges
+    // append L1 padding to skip ranges for kreon firmware only
     if(kreon)
         insert_range(protection, { (int32_t)sectors_count_capacity, (int32_t)sectors_count_capacity + (int32_t)l1_padding_length });
 
