@@ -381,7 +381,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     }
     else if(omnidrive)
     {
-        std::vector<uint8_t> indices(&sld.ranges_copy, &sld.ranges_copy + sizeof(sld.ranges_copy));
+        std::vector<uint8_t> indices((char *)&sld.ranges_copy, (char *)&sld.ranges_copy + sizeof(sld.ranges_copy));
 
         std::vector<uint8_t> cpr_mai;
         if(xgd_version(ss_layer0_last) == 1)
@@ -394,15 +394,15 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
         for(uint8_t i = 0; i < indices.size(); ++i)
             indices[i] ^= cpr_mai[i % 4];
 
-        std::vector<uint8_t> ss_range(0xCF, 0);
+        std::vector<uint8_t> ss_range(sizeof(sld.ranges), 0);
 
-        std::vector<uint8_t> ss_range_scrambled(&sld.ranges, &sld.ranges + sizeof(sld.ranges));
+        std::vector<uint8_t> ss_range_scrambled((char *)&sld.ranges, (char *)&sld.ranges + sizeof(sld.ranges));
 
         for(uint8_t i = 0; i + 1 < indices.size(); ++i)
             ss_range[i] = ss_range_scrambled[indices[i]];
 
-        std::copy(ss_range.begin(), ss_range.end(), &sld.ranges);
-        std::copy(ss_range.begin(), ss_range.end(), &sld.ranges_copy);
+        std::copy(ss_range.begin(), ss_range.end(), (char *)&sld.ranges);
+        std::copy(ss_range.begin(), ss_range.end(), (char *)&sld.ranges_copy);
     }
 
     LOG("{}: XGD detected (version: {}, security sector: {})", kreon ? "kreon" : "omnidrive", xgd_version(ss_layer0_last), ss_message);
