@@ -339,7 +339,6 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     bool omnidrive = is_omnidrive_firmware(drive_config) != std::nullopt;
     std::vector<uint8_t> security_sector(FORM1_DATA_SIZE);
     std::vector<uint8_t> cpr_mai_key(4);
-    uint8_t ss_version;
 
     if(kreon)
     {
@@ -358,14 +357,14 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
                 if(ss_retries < 3)
                     continue;
                 LOG("omnidrive: failed to read security sector, SCSI ({})", SPTD::StatusMessage(status));
-                return false;
+                return nullptr;
             }
             else if(!validate_id(raw_sector.begin()))
             {
                 if(ss_retries < 3)
                     continue;
                 LOG("omnidrive: failed to read valid security sector");
-                return false;
+                return nullptr;
             }
             // TODO: also validate EDC ?
             break;
