@@ -385,11 +385,11 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
 
         std::vector<uint8_t> cpr_mai;
         if(xgd_version(ss_layer0_last) == 1)
-            cpr_mai.assign(&sld.xgd1.cpr_mai, &sld.xgd1.cpr_mai + sizeof(sld.xgd1.cpr_mai))
+            cpr_mai.assign(&sld.xgd1.cpr_mai, &sld.xgd1.cpr_mai + sizeof(sld.xgd1.cpr_mai));
         else if(xgd_version(ss_layer0_last) == 2)
-            cpr_mai.assign(&sld.xgd23.xgd2.cpr_mai, &sld.xgd23.xgd2.cpr_mai + sizeof(sld.xgd23.xgd2.cpr_mai))
+            cpr_mai.assign(&sld.xgd23.xgd2.cpr_mai, &sld.xgd23.xgd2.cpr_mai + sizeof(sld.xgd23.xgd2.cpr_mai));
         else
-            cpr_mai.assign(&sld.xgd23.xgd3.cpr_mai, &sld.xgd23.xgd3.cpr_mai + sizeof(sld.xgd23.xgd3.cpr_mai))
+            cpr_mai.assign(&sld.xgd23.xgd3.cpr_mai, &sld.xgd23.xgd3.cpr_mai + sizeof(sld.xgd23.xgd3.cpr_mai));
 
         for(uint8_t i = 0; i < indices.size(); ++i)
             indices[i] ^= cpr_mai[i % 4];
