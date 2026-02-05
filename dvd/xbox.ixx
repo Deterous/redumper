@@ -335,7 +335,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
 {
     bool kreon = is_kreon_firmware(drive_config);
     bool custom_kreon = kreon && is_custom_kreon_firmware(drive_config);
-    bool omnidrive = is_omnidrive_firmware(drive_config);
+    bool omnidrive = is_omnidrive_firmware(drive_config) != std::null_opt;
     std::vector<uint8_t> security_sector(FORM1_DATA_SIZE);
 
     if(kreon)
@@ -381,7 +381,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     }
     else if(omnidrive)
     {
-        std::vector<uint8_t> indices(sld.begin() + offsetof(SecurityLayerDescriptor, ranges_copy), sld.begin() + offsetof(SecurityLayerDescriptor, reserved_7FF)));
+        std::vector<uint8_t> indices(&sld + offsetof(SecurityLayerDescriptor, ranges_copy), &sld + offsetof(SecurityLayerDescriptor, reserved_7FF));
 
         std::vector<uint8_t> cpr_mai;
         if(xgd_version(ss_layer0_last) == 1)
@@ -396,13 +396,13 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
 
         std::vector<uint8_t> ss_range(0xCF, 0);
 
-        std::vector<uint8_t> ss_range_scrambled(sld.begin() + offsetof(SecurityLayerDescriptor, ranges), sld.begin() + offsetof(SecurityLayerDescriptor, ranges_copy));
+        std::vector<uint8_t> ss_range_scrambled(&sld + offsetof(SecurityLayerDescriptor, ranges), &sld + offsetof(SecurityLayerDescriptor, ranges_copy));
 
         for(uint8_t i = 0; i + 1 < indices.size(); ++i)
             ss_range[i] = ss_range_scrambled[indices[i]];
 
-        std::copy(ss_range.begin(), ss_range.end(), sld.begin() + offsetof(SecurityLayerDescriptor, ranges));
-        std::copy(ss_range.begin(), ss_range.end(), sld.begin() + offsetof(SecurityLayerDescriptor, ranges_copy));
+        std::copy(ss_range.begin(), ss_range.end(), &sld + offsetof(SecurityLayerDescriptor, ranges));
+        std::copy(ss_range.begin(), ss_range.end(), &sld + offsetof(SecurityLayerDescriptor, ranges_copy));
     }
 
     LOG("{}: XGD detected (version: {}, security sector: {})", kreon ? "kreon" : "omnidrive", xgd_version(ss_layer0_last), ss_message);
