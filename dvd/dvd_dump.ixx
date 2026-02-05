@@ -864,6 +864,13 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
         fs_ctx.search = false;
     }
 
+    // TODO: can be implemented later
+    if(raw)
+    {
+        rom_update = false;
+        fs_ctx.search = false;
+    }
+
     SignalINT signal;
 
     int32_t lba_start = cfg.lba_start;
