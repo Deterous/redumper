@@ -359,7 +359,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
                 LOG("omnidrive: failed to read security sector, SCSI ({})", SPTD::StatusMessage(status));
                 return nullptr;
             }
-            else if(!validate_id(raw_sector.begin()))
+            else if(!validate_id(raw_sector.data()))
             {
                 if(ss_retries < 3)
                     continue;
@@ -404,7 +404,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
         std::vector<uint8_t> indices((char *)&sld.ranges_copy, (char *)&sld.ranges_copy + sizeof(sld.ranges_copy));
 
         if(xgd_version(ss_layer0_last) == 1)
-            std::memcpy((char *)&sld.xg1.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd1.cpr_mai));
+            std::memcpy((char *)&sld.xgd1.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd1.cpr_mai));
         else if(xgd_version(ss_layer0_last) == 2)
             std::memcpy((char *)&sld.xgd23.xgd2.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd23.xgd2.cpr_mai));
         else
