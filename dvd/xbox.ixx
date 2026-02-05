@@ -375,7 +375,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
             break;
         }
         std::copy_n(raw_sector.begin() + offsetof(DataFrame, main_data), FORM1_DATA_SIZE, security_sector.begin());
-        std::copy_n(raw_sector.begin() + offsetof(DataFrame, cpr_mai), sizeof(cpr_mai_key), cpr_mai_key.begin());
+        std::copy_n(raw_sector.begin() + offsetof(DataFrame, cpr_mai) + 1, sizeof(cpr_mai_key), cpr_mai_key.begin());
     }
 
     auto &sld = (SecurityLayerDescriptor &)security_sector[0];
