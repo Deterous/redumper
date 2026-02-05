@@ -4,6 +4,7 @@ module;
 #include <cstring>
 #include <map>
 #include <memory>
+#include <optional>
 #include <vector>
 #include "throw_line.hh"
 
