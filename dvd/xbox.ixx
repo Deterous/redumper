@@ -338,6 +338,8 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     bool custom_kreon = kreon && is_custom_kreon_firmware(drive_config);
     bool omnidrive = is_omnidrive_firmware(drive_config) != std::nullopt;
     std::vector<uint8_t> security_sector(FORM1_DATA_SIZE);
+    std::vector<uint8_t> cpr_mai_key(4);
+    uint8_t ss_version;
 
     if(kreon)
     {
@@ -347,11 +349,29 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     else if(omnidrive)
     {
         std::vector<uint8_t> raw_sector(sizeof(DataFrame));
-        auto status = cmd_read_omnidrive(sptd, raw_sector.data(), sizeof(DataFrame), XGD_SS_LEADOUT_SECTOR_PSN, 1, OmniDrive_DiscType::DVD, true, false, true, OmniDrive_Subchannels::NONE, false);
-        if(status.status_code)
-            LOG("omnidrive: failed to read XGD3 security sector lead-out, SCSI ({})", SPTD::StatusMessage(status));
-        // TODO: If status code or invalid ID or EDC, read from XGD_SS_LEADOUT_SECTOR_PSN + 0x40 (up to 4 retries)
-        std::copy(raw_sector.begin() + offsetof(DataFrame, main_data), raw_sector.begin() + offsetof(DataFrame, main_data) + FORM1_DATA_SIZE, security_sector.begin());
+        for(uint8_t ss_retries = 0; ss_retries < 4; ++ss_retries)
+        {
+            uint32_t ss_address = XGD_SS_LEADOUT_SECTOR_PSN + ss_retries * 0x40;
+            auto status = cmd_read_omnidrive(sptd, raw_sector.data(), sizeof(DataFrame), ss_address, 1, OmniDrive_DiscType::DVD, true, false, true, OmniDrive_Subchannels::NONE, false);
+            if(status.status_code)
+            {
+                if(ss_retries < 3)
+                    continue;
+                LOG("omnidrive: failed to read security sector, SCSI ({})", SPTD::StatusMessage(status));
+                return false;
+            }
+            else if(!validate_id(raw_sector.begin()))
+            {
+                if(ss_retries < 3)
+                    continue;
+                LOG("omnidrive: failed to read valid security sector");
+                return false;
+            }
+            // TODO: also validate EDC ?
+            break;
+        }
+        std::copy(raw_sector.begin() + offsetof(DataFrame, main_data), raw_sector.begin() + offsetof(DataFrame, main_data) + sizeof(security_sector), security_sector.begin());
+        std::copy(raw_sector.begin() + offsetof(DataFrame, cpr_mai), raw_sector.begin() + offsetof(DataFrame, cpr_mai) + sizeof(cpr_mai_key), cpr_mai_key.begin());
     }
 
     auto &sld = (SecurityLayerDescriptor &)security_sector[0];
@@ -384,16 +404,15 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     {
         std::vector<uint8_t> indices((char *)&sld.ranges_copy, (char *)&sld.ranges_copy + sizeof(sld.ranges_copy));
 
-        std::vector<uint8_t> cpr_mai;
         if(xgd_version(ss_layer0_last) == 1)
-            cpr_mai.assign(&sld.xgd1.cpr_mai, &sld.xgd1.cpr_mai + sizeof(sld.xgd1.cpr_mai));
+            std::memcpy((char *)&sld.xg1.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd1.cpr_mai));
         else if(xgd_version(ss_layer0_last) == 2)
-            cpr_mai.assign(&sld.xgd23.xgd2.cpr_mai, &sld.xgd23.xgd2.cpr_mai + sizeof(sld.xgd23.xgd2.cpr_mai));
+            std::memcpy((char *)&sld.xgd23.xgd2.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd23.xgd2.cpr_mai));
         else
-            cpr_mai.assign(&sld.xgd23.xgd3.cpr_mai, &sld.xgd23.xgd3.cpr_mai + sizeof(sld.xgd23.xgd3.cpr_mai));
+            std::memcpy((char *)&sld.xgd23.xgd3.cpr_mai, cpr_mai_key.data(), sizeof(sld.xgd23.xgd3.cpr_mai));
 
         for(uint8_t i = 0; i < indices.size(); ++i)
-            indices[i] ^= cpr_mai[i % 4];
+            indices[i] ^= cpr_mai_key[i % 4];
 
         std::vector<uint8_t> ss_range(sizeof(sld.ranges), 0);
 
