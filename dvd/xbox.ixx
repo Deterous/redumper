@@ -344,11 +344,15 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     bool omnidrive = is_omnidrive_firmware(drive_config) != std::nullopt;
     std::vector<uint8_t> security_sector(FORM1_DATA_SIZE);
     std::vector<uint8_t> cpr_mai_key(4);
+    std::string ss_message = "valid";
 
     if(kreon)
     {
         if(bool complete_ss = read_security_layer_descriptor(sptd, security_sector, partial_ss); !complete_ss)
+        {
             LOG("kreon: failed to get complete security sector");
+            ss_message = "incomplete";
+        }
     }
     else if(omnidrive)
     {
@@ -384,7 +388,6 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     if(!xgd_version(ss_layer0_last))
         return nullptr;
 
-    std::string ss_message = "valid";
     if(kreon && xgd_version(ss_layer0_last) == 3)
     {
         ss_message = "invalid";
@@ -427,6 +430,8 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
         // copy ranges into ss
         std::copy(ss_range.begin(), ss_range.end(), security_sector.begin() + 0x661);
         std::copy(ss_range.begin(), ss_range.end(), security_sector.begin() + 0x730);
+
+        ss_message = "incomplete";
     }
 
     LOG("{}: XGD detected (version: {}, security sector: {})", kreon ? "kreon" : "omnidrive", xgd_version(ss_layer0_last), ss_message);
