@@ -2,7 +2,7 @@ name: CMake
 
 on:
   push:
-    branches: [ main ]
+    branches: [ omnidrive-xbox ]
   pull_request:
 
 concurrency:
