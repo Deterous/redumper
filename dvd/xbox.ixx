@@ -376,7 +376,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
             // TODO: also validate EDC ?
         }
         auto &df = (DataFrame &)raw_sector[0];
-        std::copy_n(raw_sector.begin() + offsetof(DataFrame, main_data), FORM1_DATA_SIZE, security_sector.begin());
+        std::copy(df.main_data, df.main_data + FORM1_DATA_SIZE, security_sector.begin());
         cpr_mai_key = (uint32_t &)df.cpr_mai[1];
     }
 
@@ -409,25 +409,25 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     {
         // copy cpr_mai key into ss
         if(xgd_version(ss_layer0_last) == 1)
-            std::memcpy(&sld.xgd1.cpr_mai, &cpr_mai_key, sizeof(cpr_mai_key));
+            sld.xgd1.cpr_mai = cpr_mai_key;
         else if(xgd_version(ss_layer0_last) == 2)
-            std::memcpy(&sld.xgd23.xgd2.cpr_mai, &cpr_mai_key, sizeof(cpr_mai_key));
+            sld.xgd23.xgd2.cpr_mai = cpr_mai_key;
         else
-            std::memcpy(&sld.xgd23.xgd3.cpr_mai, &cpr_mai_key, sizeof(cpr_mai_key));
+            sld.xgd23.xgd3.cpr_mai = cpr_mai_key;
 
         // descramble ranges
-        std::vector<uint8_t> indices(security_sector.begin() + 0x730, security_sector.begin() + 0x800);
+        std::vector<uint8_t> indices(sld.ranges_copy, sld.ranges_copy + 207);
         for(uint8_t i = 0; i < indices.size(); ++i)
             indices[i] ^= ((uint8_t *)&cpr_mai_key)[i % 4];
 
         std::vector<uint8_t> ss_range(207, 0);
-        std::vector<uint8_t> ss_range_scrambled(security_sector.begin() + 0x661, security_sector.begin() + 0x730);
+        std::vector<uint8_t> ss_range_scrambled(sld.ranges, sld.ranges + 207);
         for(uint8_t i = 0; i + 1 < indices.size(); ++i)
             ss_range[i] = ss_range_scrambled[indices[i]];
 
         // copy ranges into ss
-        std::copy(ss_range.begin(), ss_range.end(), security_sector.begin() + 0x661);
-        std::copy(ss_range.begin(), ss_range.end(), security_sector.begin() + 0x730);
+        std::copy(ss_range.begin(), ss_range.end(), sld.ranges);
+        std::copy(ss_range.begin(), ss_range.end(), sld.ranges_copy);
 
         ss_message = "incomplete";
     }
@@ -446,7 +446,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     // extract security sector ranges from security sector
     get_security_layer_descriptor_ranges(protection, security_sector);
 
-    // append L1 padding to skip ranges for kreon firmware only
+    // append L1 padding to skip ranges to account for kreon firmware limitations
     if(kreon)
         insert_range(protection, { (int32_t)sectors_count_capacity, (int32_t)sectors_count_capacity + (int32_t)l1_padding_length });
 
