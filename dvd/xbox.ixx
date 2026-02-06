@@ -376,7 +376,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
             // TODO: also validate EDC ?
         }
         std::copy_n(raw_sector.begin() + offsetof(DataFrame, main_data), FORM1_DATA_SIZE, security_sector.begin());
-        std::memcpy(&cpr_mai_key, raw_sector.begin() + offsetof(DataFrame, cpr_mai) + 1, sizeof(cpr_mai_key));
+        std::memcpy(&cpr_mai_key, raw_sector.data() + offsetof(DataFrame, cpr_mai) + 1, sizeof(cpr_mai_key));
     }
 
     auto &sld = (SecurityLayerDescriptor &)security_sector[0];
