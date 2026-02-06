@@ -366,7 +366,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
                     return nullptr;
                 }
             }
-            else if(!validate_id(raw_sector.data()) || endian_swap(df->edc) != DVD_EDC().update(raw_sector, offsetof(DataFrame, edc)).final())
+            else if(!validate_id(raw_sector.data()) || endian_swap(df->edc) != DVD_EDC().update(raw_sector.data(), offsetof(DataFrame, edc)).final())
             {
                 if(ss_retries > 2)
                 {
