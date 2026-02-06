@@ -416,18 +416,18 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
             sld.xgd23.xgd3.cpr_mai = cpr_mai_key;
 
         // descramble ranges
-        std::vector<uint8_t> indices(&sld.ranges_copy, &sld.ranges_copy + 207);
+        std::vector<uint8_t> indices((uint8_t *)&sld.ranges_copy, (uint8_t *)&sld.ranges_copy + 207);
         for(uint8_t i = 0; i < indices.size(); ++i)
             indices[i] ^= ((uint8_t *)&cpr_mai_key)[i % 4];
 
         std::vector<uint8_t> ss_range(207, 0);
-        std::vector<uint8_t> ss_range_scrambled(&sld.ranges, &sld.ranges + 207);
+        std::vector<uint8_t> ss_range_scrambled((uint8_t *)&sld.ranges, (uint8_t *)&sld.ranges + 207);
         for(uint8_t i = 0; i + 1 < indices.size(); ++i)
             ss_range[i] = ss_range_scrambled[indices[i]];
 
         // copy ranges into ss
-        std::copy(ss_range.begin(), ss_range.end(), &sld.ranges);
-        std::copy(ss_range.begin(), ss_range.end(), &sld.ranges_copy);
+        std::copy(ss_range.begin(), ss_range.end(), (uint8_t *)&sld.ranges);
+        std::copy(ss_range.begin(), ss_range.end(), (uint8_t *)&sld.ranges_copy);
 
         ss_message = "incomplete";
     }
