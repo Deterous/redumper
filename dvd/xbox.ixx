@@ -13,7 +13,7 @@ export module dvd.xbox;
 import cd.cdrom;
 import drive;
 import dvd;
-import dvd.scrambler;
+import dvd.edc;
 import range;
 import scsi.cmd;
 import scsi.mmc;
