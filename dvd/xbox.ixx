@@ -13,6 +13,7 @@ export module dvd.xbox;
 import cd.cdrom;
 import drive;
 import dvd;
+import dvd.scrambler;
 import range;
 import scsi.cmd;
 import scsi.mmc;
@@ -351,7 +352,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     else if(omnidrive)
     {
         std::vector<uint8_t> raw_sector(sizeof(DataFrame));
-        auto df = (DataFrame *)raw_sector[0];
+        auto df = (DataFrame *)raw_sector;
         bool success = false;
         for(uint8_t ss_retries = 0; !success; ++ss_retries)
         {
@@ -377,7 +378,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
                 success = true;
         }
         std::copy(df->main_data, df->main_data + FORM1_DATA_SIZE, security_sector.begin());
-        cpr_mai_key = (uint32_t &)df.cpr_mai[1];
+        cpr_mai_key = (uint32_t &)df->cpr_mai[1];
     }
 
     auto &sld = (SecurityLayerDescriptor &)security_sector[0];
