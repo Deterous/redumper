@@ -352,7 +352,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
     else if(omnidrive)
     {
         std::vector<uint8_t> raw_sector(sizeof(DataFrame));
-        auto df = (DataFrame *)raw_sector;
+        auto df = (DataFrame *)raw_sector.data();
         bool success = false;
         for(uint8_t ss_retries = 0; !success; ++ss_retries)
         {
