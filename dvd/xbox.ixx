@@ -375,8 +375,9 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
                 success = true;
             // TODO: also validate EDC ?
         }
+        auto &df = (DataFrame &)raw_sector[0];
         std::copy_n(raw_sector.begin() + offsetof(DataFrame, main_data), FORM1_DATA_SIZE, security_sector.begin());
-        std::memcpy(&cpr_mai_key, raw_sector.data() + offsetof(DataFrame, cpr_mai) + 1, sizeof(cpr_mai_key));
+        cpr_mai_key = (uint32_t &)df.cpr_mai[1];
     }
 
     auto &sld = (SecurityLayerDescriptor &)security_sector[0];
@@ -417,7 +418,7 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
         // descramble ranges
         std::vector<uint8_t> indices(security_sector.begin() + 0x730, security_sector.begin() + 0x800);
         for(uint8_t i = 0; i < indices.size(); ++i)
-            indices[i] ^= (uint8_t *)(cpr_mai_key)[i % 4];
+            indices[i] ^= ((uint8_t *)&cpr_mai_key)[i % 4];
 
         std::vector<uint8_t> ss_range(207, 0);
         std::vector<uint8_t> ss_range_scrambled(security_sector.begin() + 0x661, security_sector.begin() + 0x730);
