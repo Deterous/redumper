@@ -273,7 +273,7 @@ void merge_xgd3_security_layer_descriptor(SecurityLayerDescriptor &sld, const Se
 }
 
 
-export void get_security_layer_descriptor_ranges(std::vector<Range<int32_t>> &protection, const std::vector<uint8_t> &security_sector)
+export bool get_security_layer_descriptor_ranges(std::vector<Range<int32_t>> &protection, const std::vector<uint8_t> &security_sector)
 {
     auto const &sld = (SecurityLayerDescriptor &)security_sector[0];
 
@@ -287,8 +287,13 @@ export void get_security_layer_descriptor_ranges(std::vector<Range<int32_t>> &pr
         auto psn_start = sign_extend<24>(endian_swap_from_array<int32_t>(sld.ranges[i].psn_start));
         auto psn_end = sign_extend<24>(endian_swap_from_array<int32_t>(sld.ranges[i].psn_end));
 
+        if(psn_start > psn_end)
+            continue;
+
         insert_range(protection, { PSN_to_LBA(psn_start, layer0_last), PSN_to_LBA(psn_end, layer0_last) + 1 });
     }
+
+    return true;
 }
 
 
@@ -450,7 +455,8 @@ export std::shared_ptr<Context> initialize(std::vector<Range<int32_t>> &protecti
         l1_padding_length += 4096;
 
     // extract security sector ranges from security sector
-    get_security_layer_descriptor_ranges(protection, security_sector);
+    if(!get_security_layer_descriptor_ranges(protection, security_sector))
+        return nullptr;
 
     // append L1 padding to skip ranges to account for kreon firmware limitations
     if(kreon)
