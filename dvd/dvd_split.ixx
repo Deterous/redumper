@@ -154,7 +154,7 @@ void descramble(Context &ctx, Options &options)
         bytes_read = sdram_fs.gcount();
         if(bytes_read != recording_frame.size())
             return;
-        auto &data_frame = (DataFrame &)sector;
+        auto &data_frame = *(DataFrame *)sector.data();
         data_frame = RecordingFrame_to_DataFrame((RecordingFrame &)recording_frame);
         psn = ((uint32_t)sector[1] << 16) | ((uint32_t)sector[2] << 8) | ((uint32_t)sector[3]);
         success = scrambler.descramble(sector.data(), psn, key);
