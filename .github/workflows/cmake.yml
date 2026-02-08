@@ -2,7 +2,7 @@ name: CMake
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dvd-split ]
   pull_request:
 
 concurrency:
