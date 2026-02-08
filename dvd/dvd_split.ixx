@@ -139,7 +139,7 @@ void descramble(Context &ctx, Options &options)
     bool success;
     std::streamsize bytes_read;
     std::vector<uint8_t> recording_frame(sizeof(RecordingFrame));
-    std::vector<uint8_t> data_frame(sizeof(DataFrame));
+    std::vector<uint8_t> sector(sizeof(DataFrame));
     uint32_t main_data_offset = offsetof(DataFrame, main_data);
 
     // TODO: read/descramble lead-in sectors, write to separate file?
@@ -152,12 +152,13 @@ void descramble(Context &ctx, Options &options)
         bytes_read = sdram_fs.gcount();
         if(bytes_read != recording_frame.size())
             return;
-        data_frame = RecordingFrame_to_DataFrame(recording_frame);
-        psn = ((uint32_t)data_frame[1] << 16) | ((uint32_t)data_frame[2] << 8) | ((uint32_t)data_frame[3]);
-        success = scrambler.descramble(data_frame.data(), psn);
+        auto &data_frame = (DataFrame &)sector;
+        data_frame = RecordingFrame_to_DataFrame((RecordingFrame)recording_frame);
+        psn = ((uint32_t)sector[1] << 16) | ((uint32_t)sector[2] << 8) | ((uint32_t)sector[3]);
+        success = scrambler.descramble(sector.data(), psn);
         if(!success)
             LOG("warning: descramble failed (LBA: {})", psn + DVD_LBA_START);
-        iso_fs.write((char *)(data_frame.data() + main_data_offset), FORM1_DATA_SIZE);
+        iso_fs.write((char *)(sector.data() + main_data_offset), FORM1_DATA_SIZE);
     }
 }
 
