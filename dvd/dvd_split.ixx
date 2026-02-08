@@ -144,6 +144,7 @@ void descramble(Context &ctx, Options &options)
 
     // TODO: read/descramble lead-in sectors, write to separate file?
     sdram_fs.seekg(-DVD_LBA_START * sizeof(RecordingFrame));
+    uint32_t psn = -DVD_LBA_START;
 
     // TODO: detect lead-out sectors, write to separate file?
     while(true)
