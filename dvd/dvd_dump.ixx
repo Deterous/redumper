@@ -232,9 +232,9 @@ void print_physical_structure(const READ_DVD_STRUCTURE_LayerDescriptor &layer_de
     uint32_t psn_last_raw = endian_swap(layer_descriptor.data_end_sector);
     uint32_t psn_l0_last_raw = endian_swap(layer_descriptor.layer0_end_sector);
 
-    uint32_t psn_first = sign_extend<24>(psn_first_raw);
-    uint32_t psn_last = sign_extend<24>(psn_last_raw);
-    uint32_t psn_l0_last = sign_extend<24>(psn_l0_last_raw);
+    int32_t psn_first = sign_extend<24>(psn_first_raw);
+    int32_t psn_last = sign_extend<24>(psn_last_raw);
+    int32_t psn_l0_last = sign_extend<24>(psn_l0_last_raw);
 
     uint32_t length = get_dvd_layer_length(layer_descriptor);
 
