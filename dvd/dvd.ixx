@@ -40,7 +40,7 @@ export struct DataFrame
     {
         uint8_t layer_number       :1;
         uint8_t data_type          :1;
-        ZoneType zone_type          :2;
+        ZoneType zone_type         :2;
         uint8_t reserved           :1;
         uint8_t reflectivity       :1;
         uint8_t tracking_method    :1;

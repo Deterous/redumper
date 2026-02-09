@@ -152,7 +152,7 @@ void descramble(Context &ctx, Options &options)
     sdram_fs.seekg(-DVD_LBA_START * sizeof(RecordingFrame));
 
     // TODO: stop loop at last State::SUCCESS sector?
-    for(uint32_t psn = -DVD_LBA_START; ; ++psn)
+    for(uint32_t psn = -DVD_LBA_START;; ++psn)
     {
         sdram_fs.read((char *)rf.data(), rf.size());
         bytes_read = sdram_fs.gcount();
