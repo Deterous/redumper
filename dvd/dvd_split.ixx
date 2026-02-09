@@ -129,38 +129,43 @@ void descramble(Context &ctx, Options &options)
 
     std::filesystem::path sdram_path(image_prefix + ".sdram");
     std::filesystem::path iso_path(image_prefix + ".iso");
-    if(!std::filesystem::exists(sdram_path) || std::filesystem::exists(iso_path))
-        return;
 
-    std::ifstream sdram_fs(sdram_path, std::ofstream::binary);
+    std::fstream sdram_fs(sdram_path, std::fstream::in | std::fstream::binary);
+    if(!sdram_fs.is_open())
+        throw_line("unable to open file ({})", sdram_path.filename().string());
+
+    if(std::filesystem::exists(iso_path))
+    {
+        LOG("warning: file already exists ({}.iso)", options.image_name);
+        return;
+    }
     std::ofstream iso_fs(iso_path, std::ofstream::binary);
 
     DVD_Scrambler scrambler;
     bool success;
     std::streamsize bytes_read;
-    std::vector<uint8_t> recording_frame(sizeof(RecordingFrame));
-    std::vector<uint8_t> sector(sizeof(DataFrame));
+    std::vector<uint8_t> rf(sizeof(RecordingFrame));
     uint32_t main_data_offset = offsetof(DataFrame, main_data);
     std::optional<std::uint8_t> key = std::nullopt;
 
-    // TODO: read/descramble lead-in sectors, write to separate file?
+    // start descrambling from LBA 0
     sdram_fs.seekg(-DVD_LBA_START * sizeof(RecordingFrame));
-    uint32_t psn = -DVD_LBA_START;
 
-    // TODO: detect lead-out sectors, write to separate file?
-    while(true)
+    // TODO: stop loop at last State::SUCCESS sector?
+    for(uint32_t psn = -DVD_LBA_START; ; ++psn)
     {
-        sdram_fs.read((char *)recording_frame.data(), recording_frame.size());
+        sdram_fs.read((char *)rf.data(), rf.size());
         bytes_read = sdram_fs.gcount();
-        if(bytes_read != recording_frame.size())
+        if(bytes_read != rf.size())
             return;
-        auto &data_frame = *(DataFrame *)sector.data();
-        data_frame = RecordingFrame_to_DataFrame((RecordingFrame &)recording_frame);
-        psn = ((uint32_t)sector[1] << 16) | ((uint32_t)sector[2] << 8) | ((uint32_t)sector[3]);
-        success = scrambler.descramble(sector.data(), psn, key);
+        auto df = RecordingFrame_to_DataFrame((RecordingFrame &)rf);
+        if(df.id.zone_type != ZoneType::DATA_ZONE)
+            return;
+        success = scrambler.descramble((uint8_t *)&df, psn, key);
         if(!success)
             LOG("warning: descramble failed (LBA: {})", psn + DVD_LBA_START);
-        iso_fs.write((char *)(sector.data() + main_data_offset), FORM1_DATA_SIZE);
+        iso_fs.write((char *)((uint8_t *)&df + main_data_offset), FORM1_DATA_SIZE);
+        psn += 1;
     }
 }
 
