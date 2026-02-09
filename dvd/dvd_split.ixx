@@ -130,6 +130,8 @@ void descramble(Context &ctx, Options &options)
     std::filesystem::path sdram_path(image_prefix + ".sdram");
     std::filesystem::path iso_path(image_prefix + ".iso");
 
+    if(!std::filesystem::exists(sdram_path))
+        return;
     std::fstream sdram_fs(sdram_path, std::fstream::in | std::fstream::binary);
     if(!sdram_fs.is_open())
         throw_line("unable to open file ({})", sdram_path.filename().string());
