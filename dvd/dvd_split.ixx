@@ -155,7 +155,7 @@ void extract_iso(Context &ctx, Options &options)
     std::optional<std::uint8_t> key = std::nullopt;
 
     // start extracting ISO from LBA 0
-    uint32_t psn = -DVD_LBA_START
+    uint32_t psn = -DVD_LBA_START;
     sdram_fs.seekg(psn * sizeof(RecordingFrame));
     if(sdram_fs.fail())
         throw_line("seek failed");
