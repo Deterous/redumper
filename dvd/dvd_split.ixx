@@ -128,6 +128,7 @@ void extract_iso(Context &ctx, Options &options)
     auto image_prefix = (std::filesystem::path(options.image_path) / options.image_name).string();
 
     std::filesystem::path sdram_path(image_prefix + ".sdram");
+    std::filesystem::path state_path(image_prefix + ".state");
     std::filesystem::path iso_path(image_prefix + ".iso");
     if(!std::filesystem::exists(sdram_path))
         return;
@@ -137,16 +138,20 @@ void extract_iso(Context &ctx, Options &options)
         return;
     }
 
-    std::fstream sdram_fs(sdram_path, std::fstream::in | std::fstream::binary);
+    std::ifstream sdram_fs(sdram_path, std::ifstream::binary);
     if(!sdram_fs.is_open())
         throw_line("unable to open file ({})", sdram_path.filename().string());
     uint64_t sdram_size = std::filesystem::file_size(sdram_path);
     if(sdram_size % sizeof(RecordingFrame) != 0)
         throw_line("unexpected file size ({})", sdram_path.filename().string());
 
+    std::ifstream state_fs(state_path, std::ifstream::binary);
+    if(!state_fs.is_open())
+        throw_line("unable to open file ({})", state_path.filename().string());
+
     std::ofstream iso_fs(iso_path, std::ofstream::binary);
     if(!iso_fs.is_open())
-        throw_line("unable to open file ({})", sdram_path.filename().string());
+        throw_line("unable to open file ({})", iso_path.filename().string());
 
     DVD_Scrambler scrambler;
     std::streamsize bytes_read;
