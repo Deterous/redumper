@@ -138,18 +138,18 @@ void extract_iso(Context &ctx, Options &options)
         return;
     }
 
-    std::ifstream sdram_fs(sdram_path, std::ifstream::binary);
+    std::fstream sdram_fs(sdram_path, std::fstream::in | std::fstream::binary);
     if(!sdram_fs.is_open())
         throw_line("unable to open file ({})", sdram_path.filename().string());
     uint64_t sdram_size = std::filesystem::file_size(sdram_path);
     if(sdram_size % sizeof(RecordingFrame) != 0)
         throw_line("unexpected file size ({})", sdram_path.filename().string());
 
-    std::ifstream state_fs(state_path, std::ifstream::binary);
+    std::fstream state_fs(state_path, std::fstream::in | std::fstream::binary);
     if(!state_fs.is_open())
         throw_line("unable to open file ({})", state_path.filename().string());
 
-    std::ofstream iso_fs(iso_path, std::ofstream::binary);
+    std::fstream iso_fs(iso_path, std::fstream::out | std::fstream::binary);
     if(!iso_fs.is_open())
         throw_line("unable to open file ({})", iso_path.filename().string());
 
