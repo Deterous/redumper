@@ -168,7 +168,7 @@ void extract_iso(Context &ctx, Options &options)
     for(uint32_t sector_count = sdram_size / sizeof(RecordingFrame); psn < sector_count; ++psn)
     {
         read_entry(sdram_fs, rf.data(), rf.size(), psn, 1, 0, 0);
-        read_entry(state_fs, &state, sizeof(State), psn, 1, 0, (uint8_t)State::ERROR_SKIP);
+        read_entry(state_fs, (uint8_t *)&state, sizeof(State), psn, 1, 0, (uint8_t)State::ERROR_SKIP);
         if(state == State::ERROR_SKIP)
             throw_line("read errors detected, unable to continue");
         auto df = RecordingFrame_to_DataFrame((RecordingFrame &)rf[0]);
