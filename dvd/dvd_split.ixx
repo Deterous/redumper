@@ -3,6 +3,7 @@ module;
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <numeric>
 #include <string>
 #include <vector>
 #include "throw_line.hh"
@@ -191,6 +192,100 @@ void extract_iso(Context &ctx, Options &options)
             LOG("warning: descramble failed (LBA: {})", d.first);
         else
             LOG("warning: descramble failed (LBA: [{} .. {}])", d.first, d.second);
+    }
+
+    // clean the .security and write it to a .ss (if it doesn't exist)
+    std::filesystem::path ss_path(image_prefix + ".ss");
+    if(std::filesystem::exists(ss_path) && !options.overwrite)
+    {
+        LOG("warning: file already exists ({}.ss)", options.image_name);
+    }
+    else
+    {
+        auto security = read_vector(security_path);
+        if(!security.empty() && security.size() == FORM1_DATA_SIZE)
+        {
+            xbox::clean_security_sector(security);
+            write_vector(ss_path, security);
+
+            ROMEntry ss_rom_entry(ss_path.filename().string());
+            ss_rom_entry.update(security.data(), FORM1_DATA_SIZE);
+            if(ctx.dat.has_value())
+                ctx.dat->push_back(ss_rom_entry.xmlLine());
+        }
+        else
+        {
+            LOG("warning: could not generate SS, unexpected file size ({})", security_path.filename().string());
+        }
+    }
+}
+
+
+void descramble(Context &ctx, Options &options)
+{
+    auto image_prefix = (std::filesystem::path(options.image_path) / options.image_name).string();
+
+    std::filesystem::path sdram_path(image_prefix + ".sdram");
+    std::filesystem::path iso_path(image_prefix + ".iso");
+    if(!std::filesystem::exists(sdram_path))
+        return;
+
+    std::ifstream sdram_fs(sdram_path, std::ofstream::binary);
+    std::ofstream iso_fs(iso_path, std::ofstream::binary);
+
+    bool nintendo = ctx.nintendo && *ctx.nintendo;
+    std::optional<std::uint8_t> key = std::nullopt;
+    std::filesystem::path physical_path(image_prefix + ".physical");
+    if(!nintendo && std::filesystem::exists(physical_path))
+    {
+        auto physical = read_vector(physical_path);
+        if(!physical.empty() && physical.size() == FORM1_DATA_SIZE + 4 && physical[sizeof(CMD_ParameterListHeader)] == 0xFF)
+            nintendo = true;
+    }
+
+    DVD_Scrambler scrambler;
+    bool success;
+    std::streamsize bytesRead;
+    uint32_t main_data_offset = offsetof(DataFrame, main_data);
+    std::vector<uint8_t> sector(sizeof(DataFrame));
+
+    // TODO: read/descramble lead-in sectors, write to separate file
+    // pressed nintendo discs have no key set during lead-in/lead-out
+    sdram_fs.seekg(-DVD_LBA_START * sizeof(DataFrame));
+    uint32_t psn = -DVD_LBA_START;
+
+    if(nintendo)
+    {
+        // nintendo discs have user data at CPR_MAI position
+        main_data_offset = offsetof(DataFrame, cpr_mai);
+        sdram_fs.read((char *)sector.data(), sector.size());
+        bytesRead = sdram_fs.gcount();
+        if(bytesRead != sector.size())
+            return;
+        success = scrambler.descramble(sector.data(), psn, 0);
+        if(!success)
+            LOG("warning: descramble failed (LBA: {})", psn + DVD_LBA_START);
+        iso_fs.write((char *)(sector.data() + main_data_offset), FORM1_DATA_SIZE);
+        auto sum = std::accumulate(sector.begin() + 6, sector.begin() + 14, 0);
+        key = ((sum >> 4) + sum) & 0xF;
+    }
+
+    // TODO: detect lead-out sectors, write to separate file
+    while(true)
+    {
+        sdram_fs.read((char *)sector.data(), sector.size());
+        bytesRead = sdram_fs.gcount();
+        if(bytesRead != sector.size())
+            return;
+        psn = ((uint32_t)sector[1] << 16) | ((uint32_t)sector[2] << 8) | ((uint32_t)sector[3]);
+        // nintendo discs first ECC block has key (psn >> 4 & 0xF)
+        if(nintendo && psn + DVD_LBA_START < ECC_FRAMES)
+            success = scrambler.descramble(sector.data(), psn, psn >> 4 & 0xF);
+        else
+            success = scrambler.descramble(sector.data(), psn, key);
+        if(!success)
+            LOG("warning: descramble failed (LBA: {})", psn + DVD_LBA_START);
+        iso_fs.write((char *)(sector.data() + main_data_offset), FORM1_DATA_SIZE);
     }
 }
 
