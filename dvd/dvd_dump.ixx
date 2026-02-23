@@ -572,7 +572,7 @@ SPTD::Status read_dvd_sectors(SPTD &sptd, uint8_t *sectors, uint32_t sector_size
         if(!status.status_code)
         {
             bool valid = true;
-            bd:Scrambler bd_scrambler;
+            bd::Scrambler bd_scrambler;
             for(uint32_t i = 0; i < sectors_count; ++i)
             {
                 BlurayDataFrame bdf = data_frames[i];
