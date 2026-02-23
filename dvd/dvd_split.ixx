@@ -266,7 +266,7 @@ void bd_extract_iso(Context &ctx, Options &options)
     uint32_t sector_count = sbram_size / sizeof(BlurayDataFrame) + BD_LBA_START;
     for(uint32_t lba = 0; lba < sector_count; ++lba)
     {
-        read_entry(sbram_fs, (uint8_t *)&bdf, sector.size(), lba - BD_LBA_START, 1, 0, 0);
+        read_entry(sbram_fs, sector.data(), sector.size(), lba - BD_LBA_START, 1, 0, 0);
         State state;
         read_entry(state_fs, (uint8_t *)&state, sizeof(State), lba - BD_LBA_START, 1, 0, (uint8_t)State::ERROR_SKIP);
         if(state == State::ERROR_SKIP && !options.force_split)
@@ -281,7 +281,7 @@ void bd_extract_iso(Context &ctx, Options &options)
                 descramble_errors.back().second = lba;
         }
 
-        iso_fs.write((char *)bdf, FORM1_DATA_SIZE);
+        iso_fs.write((char *)&bdf, FORM1_DATA_SIZE);
         if(iso_fs.fail())
             throw_line("write failed ({})", iso_path.filename().string());
     }
