@@ -21,7 +21,7 @@ import utils.misc;
 namespace gpsxre::bd
 {
 
-export bool descramble(BlurayDataFrame &bdf, uint32_t psn) const
+export bool descramble(BlurayDataFrame &bdf, uint32_t psn)
 {
     bool descrambled = false;
 
@@ -41,7 +41,7 @@ export bool descramble(BlurayDataFrame &bdf, uint32_t psn) const
 }
 
 
-void process(std::span<uint8_t> data, uint32_t psn) const
+void process(std::span<uint8_t> data, uint32_t psn)
 {
     // ISO/IEC 30190
 
