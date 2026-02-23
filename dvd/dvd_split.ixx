@@ -205,7 +205,7 @@ void extract_iso(Context &ctx, Options &options)
         {
             if(lba == 0)
                 nintendo_key = nintendo::derive_key(std::span(df.cpr_mai, df.cpr_mai + 8));
-            else if(lba == ECC_FRAMES - 1)
+            else if(lba == DVD_ECC_FRAMES - 1)
                 key = nintendo_key;
         }
     }

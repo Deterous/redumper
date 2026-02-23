@@ -2,7 +2,7 @@ name: CMake
 
 on:
   push:
-    branches: [ main ]
+    branches: [ sbram ]
   pull_request:
 
 concurrency:
