@@ -17,9 +17,6 @@ import utils.galois;
 namespace gpsxre
 {
 
-export constexpr int32_t BD_LBA_START = -0x100000;
-export constexpr int32_t BD_LBA_IZ = -0x2000;
-export constexpr uint32_t BD_ECC_FRAMES = 0x20;
 export constexpr int32_t DVD_LBA_START = -0x30000;
 export constexpr int32_t DVD_LBA_RCZ = -0x1000;
 export constexpr uint32_t DVD_ECC_FRAMES = 0x10;
@@ -69,20 +66,6 @@ export struct RecordingFrame
         uint8_t parity_inner[10];
     } row[12];
     uint8_t parity_outer[182];
-};
-
-
-export struct BlurayDataFrame
-{
-    uint8_t main_data[FORM1_DATA_SIZE];
-    uint32_t edc;
-};
-
-
-export struct OmniDriveBlurayDataFrame
-{
-    BlurayDataFrame data_frame;
-    uint8_t unknown[20];
 };
 
 
