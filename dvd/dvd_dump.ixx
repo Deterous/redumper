@@ -574,7 +574,8 @@ SPTD::Status read_dvd_sectors(SPTD &sptd, uint8_t *sectors, uint32_t sector_size
             bool valid = true;
             for(uint32_t i = 0; i < sectors_count; ++i)
             {
-                BlurayDataFrame bdf = *(BlurayDataFrame *)&data_frames[i];
+                BlurayDataFrame bdf;
+                std::memcpy(&bdf, &data_frames[i], sizeof(BlurayDataFrame));
                 int32_t lba = lba_base + (int32_t)i;
 
                 if(!bd::descramble(bdf, lba - BD_LBA_START))
