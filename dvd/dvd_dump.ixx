@@ -14,6 +14,7 @@ module;
 
 export module dvd.dump;
 
+import bd;
 import cd.cdrom;
 import common;
 import drive;
@@ -69,7 +70,7 @@ static const std::string BOOK_TYPE[] =
     "RESERVED4",
     "DVD+RW DL",
     "DVD+R DL",
-    "RESERVED5"
+    "NINTENDO"
 };
 
 
@@ -501,9 +502,12 @@ DumpConfig dump_get_config(DiscType disc_type, bool raw)
 {
     DumpConfig config{ ".iso", FORM1_DATA_SIZE, 0, 0, 0 };
 
-    if(disc_type == DiscType::DVD && raw)
+    if(raw)
     {
-        config = DumpConfig{ ".sdram", sizeof(dvd::RecordingFrame), dvd::LBA_START, 0, 0 };
+        if(disc_type == DiscType::DVD)
+            config = DumpConfig{ ".sdram", sizeof(dvd::RecordingFrame), dvd::LBA_START, 0, 0 };
+        else if((disc_type == DiscType::BLURAY || disc_type == DiscType::BLURAY_R))
+            config = DumpConfig{ ".sbram", sizeof(bd::DataFrame), bd::LBA_START, bd::LBA_IZ - (int32_t)OVERREAD_COUNT, 0 };
     }
 
     return config;
@@ -514,7 +518,9 @@ SPTD::Status read_dvd_sectors(SPTD &sptd, uint8_t *sectors, uint32_t sector_size
 {
     SPTD::Status status;
 
-    if(disc_type == DiscType::DVD && raw)
+    if(!raw)
+        status = cmd_read(sptd, sectors, sector_size, lba, sectors_count, force_unit_access);
+    else if(disc_type == DiscType::DVD)
     {
         if(sector_size != sizeof(dvd::RecordingFrame))
             throw_line("invalid sector size for raw DVD read (expected: {}, actual: {})", sizeof(dvd::RecordingFrame), sector_size);
@@ -532,8 +538,24 @@ SPTD::Status read_dvd_sectors(SPTD &sptd, uint8_t *sectors, uint32_t sector_size
             }
         }
     }
-    else
-        status = cmd_read(sptd, sectors, sector_size, lba, sectors_count, force_unit_access);
+    else if(disc_type == DiscType::BLURAY || disc_type == DiscType::BLURAY_R)
+    {
+        if(sector_size != sizeof(bd::DataFrame))
+            throw_line("invalid sector size for raw BD read (expected: {}, actual: {})", sizeof(bd::DataFrame), sector_size);
+
+        std::vector<bd::OmniDriveDataFrame> data_frames(sectors_count);
+        status = cmd_read_omnidrive(sptd, (uint8_t *)data_frames.data(), sizeof(bd::OmniDriveDataFrame), lba, sectors_count, OmniDrive_DiscType::BD, false, force_unit_access, false,
+            OmniDrive_Subchannels::NONE, false);
+
+        if(!status.status_code)
+        {
+            for(uint32_t i = 0; i < sectors_count; ++i)
+            {
+                auto &df = (bd::DataFrame &)sectors[i * sizeof(bd::DataFrame)];
+                df = data_frames[i].data_frame;
+            }
+        }
+    }
 
     return status;
 }
@@ -839,9 +861,14 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
         }
     }
 
-    bool raw = (options.dvd_raw || nintendo_key) && omnidrive_firmware;
-    if(options.dvd_raw && !omnidrive_firmware)
+    bool dvd_raw = options.dvd_raw && ctx.disc_type == DiscType::DVD;
+    bool bd_raw = options.bd_raw && (ctx.disc_type == DiscType::BLURAY || ctx.disc_type == DiscType::BLURAY_R);
+    if(dvd_raw && !omnidrive_firmware)
         LOG("warning: drive not compatible with raw DVD dumping");
+    if(bd_raw && !omnidrive_firmware)
+        LOG("warning: drive not compatible with raw BD dumping");
+
+    bool raw = (dvd_raw || bd_raw || nintendo_key) && omnidrive_firmware;
 
     auto cfg = dump_get_config(ctx.disc_type, raw);
 
@@ -854,9 +881,18 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
     }
     else if(raw && omnidrive_firmware)
     {
-        // ensure default total transfer length is less than 65536 bytes (31 * 2064)
-        LOG("warning: setting dump read size to 31 for raw dumping");
-        dump_read_size = 31;
+        if(ctx.disc_type == DiscType::DVD)
+        {
+            // ensure default total transfer length is less than 65536 bytes (31 * 2064)
+            LOG("warning: setting dump read size to 31 for raw DVD dumping");
+            dump_read_size = 31;
+        }
+        else if(ctx.disc_type == DiscType::BLURAY || ctx.disc_type == DiscType::BLURAY_R)
+        {
+            // ensure default total transfer length is less than 16384 (7 * 2072)
+            LOG("warning: setting dump read size to 7 for raw BD dumping");
+            dump_read_size = 7;
+        }
     }
     else
         dump_read_size = DVD_READ_SIZE;
@@ -1044,9 +1080,9 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                 }
                 else
                 {
-                    if(options.verbose)
+                    if(options.verbose && raw)
                     {
-                        if(ctx.disc_type == DiscType::DVD && raw)
+                        if(ctx.disc_type == DiscType::DVD)
                         {
                             for(uint32_t i = 0; i < sectors_to_read; ++i)
                             {
@@ -1056,6 +1092,18 @@ export bool redumper_dump_dvd(Context &ctx, const Options &options, DumpMode dum
                                 int32_t l = lba + lba_shift + (int32_t)i;
 
                                 if(!df.valid(nintendo::get_key(nintendo_key, l, df)))
+                                    LOG_R("[LBA: {}] invalid data frame", l);
+                            }
+                        }
+                        else if(ctx.disc_type == DiscType::BLURAY || ctx.disc_type == DiscType::BLURAY_R)
+                        {
+                            for(uint32_t i = 0; i < sectors_to_read; ++i)
+                            {
+                                auto &df = (bd::DataFrame &)drive_data[i * sizeof(bd::DataFrame)];
+
+                                int32_t l = lba + lba_shift + (int32_t)i;
+
+                                if(!df.valid(l))
                                     LOG_R("[LBA: {}] invalid data frame", l);
                             }
                         }
