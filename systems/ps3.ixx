@@ -77,9 +77,14 @@ public:
 
         if(!serial.empty())
             os << std::format("  serial: {}", serial) << std::endl;
+
+        auto firmware_version = pupVersion(data_reader, root_directory);
+        if(!firmware_version.empty())
+            os << std::format("  firmware version: {}", firmware_version) << std::endl;
     }
 
 private:
+    static constexpr PUP_FILE_OFFSET = 0x3E;
     struct SFBHeader
     {
         uint8_t magic[4];
@@ -150,6 +155,29 @@ private:
         }
 
         return sfb;
+    }
+
+    std::string pupVersion(DataReader *data_reader, std::shared_ptr<Entry> root_directory) const
+    {
+        std::string firmware_version;
+
+        auto pup_file = root_directory->subEntry("PS3_UPDATE/PS3UPDAT.PUP");
+        if(!pup_file)
+            return firmware_version;
+
+        std::vector<uint8_t> sector(data_reader->sectorsSize());
+        if(data_reader->read(sector.data(), pup_file.sectorsLBA(), 1) != 1)
+            return firmware_version;
+
+        uint32_t data_offset = ((uint32_t)sector[PUP_FILE_OFFSET] << 8) | sector[PUP_FILE_OFFSET + 1];
+        if(data_reader->read(sector.data(), data_offset / data_reader->sectorsSize(), 1) != 1)
+            return firmware_version;
+
+        uint32_t version_offset = data_offset % data_reader->sectorsSize();
+        if(version_offset + 4 <= sector.size())
+            firmware_version.assign((char*)&sector[version_offset], 4);
+
+        return firmware_version;
     }
 
 protected:
