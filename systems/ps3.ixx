@@ -175,7 +175,7 @@ private:
 
         uint32_t version_offset = data_offset % data_reader->sectorsSize();
         if(version_offset + 4 <= sector.size())
-            firmware_version.assign((char*)&sector[version_offset], 4);
+            firmware_version.assign((char *)&sector[version_offset], 4);
 
         return firmware_version;
     }
