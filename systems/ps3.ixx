@@ -5,6 +5,7 @@ module;
 #include <ostream>
 #include <span>
 #include <string_view>
+#include <vector>
 #include "system.hh"
 #include "throw_line.hh"
 
@@ -164,17 +165,21 @@ private:
         if(!pup_file)
             return firmware_version;
 
-        std::vector<uint8_t> sector(data_reader->sectorSize());
-        if(data_reader->read(sector.data(), pup_file->sectorsLBA(), 1) != 1)
+        std::vector<uint8_t> sector_buffer(data_reader->sectorSize());
+        if(data_reader->read(sector_buffer.data(), pup_file->sectorsLBA(), 1) != 1)
             return firmware_version;
 
-        uint32_t data_offset = ((uint32_t)sector[PUP_FILE_OFFSET] << 8) | sector[PUP_FILE_OFFSET + 1];
-        if(data_reader->read(sector.data(), data_offset / data_reader->sectorSize(), 1) != 1)
-            return firmware_version;
+        uint32_t version_offset = ((uint32_t)sector_buffer[PUP_FILE_OFFSET] << 8) | sector_buffer[PUP_FILE_OFFSET + 1];
+        if(version_offset >= data_reader->sectorSize())
+        {
+            uint32_t target_sector = pup_file->sectorsLBA() + version_offset / data_reader->sectorSize();
+            if(data_reader->read(sector_buffer.data(), target_sector, 1) != 1)
+                return firmware_version;
+        }
 
-        uint32_t version_offset = data_offset % data_reader->sectorSize();
-        if(version_offset + 4 <= sector.size())
-            firmware_version.assign((char *)&sector[version_offset], 4);
+        uint32_t relative_offset = version_offset % data_reader->sectorSize();
+        if(relative_offset + 4 <= sector_buffer.size())
+            firmware_version.assign((char *)&sector_buffer[relative_offset], 4);
 
         return firmware_version;
     }
