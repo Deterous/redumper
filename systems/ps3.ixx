@@ -165,7 +165,7 @@ private:
             return firmware_version;
 
         std::vector<uint8_t> sector(data_reader->sectorSize());
-        if(data_reader->read(sector.data(), pup_file.sectorsLBA(), 1) != 1)
+        if(data_reader->read(sector.data(), pup_file->sectorsLBA(), 1) != 1)
             return firmware_version;
 
         uint32_t data_offset = ((uint32_t)sector[PUP_FILE_OFFSET] << 8) | sector[PUP_FILE_OFFSET + 1];
