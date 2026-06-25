@@ -443,7 +443,7 @@ export int redumper_state(Context &ctx, Options &options)
     else if(std::filesystem::exists(image_prefix + ".sbram"))
         offset = bd::LBA_START;
 
-    static const char *STATE_NAME[] = { "Unread", "C2 error", "Success (Plextor lead-in)", "Success (MediaTek lead-out)", "Success" };
+    static const char *STATE_NAME[] = { "Unread", "Read Error", "Success (Plextor lead-in)", "Success (MediaTek lead-out)", "Success" };
 
     LOG("state file (unit: {}): ", cd ? "samples" : "sectors");
 
@@ -458,9 +458,9 @@ export int redumper_state(Context &ctx, Options &options)
             return;
 
         if(cd)
-            LOG("  {} .. {} (LBA {} .. {}): {}", range_start, range_end, range_start / CD_DATA_SIZE_SAMPLES, range_end / CD_DATA_SIZE_SAMPLES, STATE_NAME[(uint8_t)current]);
+            LOG("  {}-{} (LBA {}-{}): {}", range_start, range_end, range_start / CD_DATA_SIZE_SAMPLES, range_end / CD_DATA_SIZE_SAMPLES, STATE_NAME[(uint8_t)current]);
         else
-            LOG("  {} .. {}: {}", range_start, range_end, STATE_NAME[(uint8_t)current]);
+            LOG("  {}-{}: {}", range_start, range_end, STATE_NAME[(uint8_t)current]);
     };
 
     for(uint64_t i = 0; i < entries_count; i += CHUNK)
