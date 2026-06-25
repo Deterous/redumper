@@ -458,7 +458,7 @@ export int redumper_state(Context &ctx, Options &options)
             return;
 
         if(cd)
-            LOG("  {} .. {} (LBA {} .. {}): {}", range_start, range_end, range_start / CD_DATA_SIZE_SAMPLES + LBA_START, range_end / CD_DATA_SIZE_SAMPLES + LBA_START, STATE_NAME[(uint8_t)current]);
+            LOG("  {} .. {} (LBA {} .. {}): {}", range_start, range_end, range_start / CD_DATA_SIZE_SAMPLES, range_end / CD_DATA_SIZE_SAMPLES, STATE_NAME[(uint8_t)current]);
         else
             LOG("  {} .. {}: {}", range_start, range_end, STATE_NAME[(uint8_t)current]);
     };
