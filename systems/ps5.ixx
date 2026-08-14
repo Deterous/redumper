@@ -4,6 +4,7 @@ module;
 #include <map>
 #include <ostream>
 #include <span>
+#include <string_view>
 #include "system.hh"
 #include "throw_line.hh"
 
@@ -59,7 +60,7 @@ public:
     }
 
 private:
-    static constexpr std::array<std::string, 1> _PKG_FILE_NAMES = { "app_sc.pkg" };
+    static constexpr std::array<std::string_view, 1> _PKG_FILE_NAMES = { "app_sc.pkg" };
 
     std::map<std::string, std::string> loadJSON(std::shared_ptr<iso9660::Entry> json_entry) const
     {

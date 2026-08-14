@@ -5,6 +5,7 @@ module;
 #include <map>
 #include <ostream>
 #include <span>
+#include <string_view>
 #include <vector>
 #include "system.hh"
 #include "throw_line.hh"
@@ -68,7 +69,7 @@ public:
     }
 
 protected:
-    std::string getContentIds(DataReader *data_reader, std::shared_ptr<iso9660::Entry> root_directory, std::span<const std::string> pkg_file_names) const
+    std::string getContentIds(DataReader *data_reader, std::shared_ptr<iso9660::Entry> root_directory, std::span<const std::string_view> pkg_file_names) const
     {
         auto app_directory = root_directory->subEntry("app");
         if(!app_directory)
@@ -84,7 +85,7 @@ protected:
 
             for(const auto &pkg_file_name : pkg_file_names)
             {
-                auto app_pkg_entry = e->subEntry(pkg_file_name);
+                auto app_pkg_entry = e->subEntry(std::string(pkg_file_name));
                 if(!app_pkg_entry)
                     continue;
 
@@ -110,7 +111,7 @@ protected:
 
 private:
     static constexpr uint32_t _PKG_MAGIC = 0x7F434E54;
-    static constexpr std::array<std::string, 3> _PKG_FILE_NAMES = { "app.pkg", "app_h.pkg", "app_0.pkg" };
+    static constexpr std::array<std::string_view, 3> _PKG_FILE_NAMES = { "app.pkg", "app_h.pkg", "app_0.pkg" };
 
     struct PkgHeader
     {
