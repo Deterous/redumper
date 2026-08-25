@@ -19,7 +19,7 @@ redumper is written from scratch in C++ and runs on Windows, Linux, and macOS.
 - Raw DVD and Blu-ray sector dumping with [OmniDrive](https://github.com/RibShark/OmniDrive) firmware
 - Nintendo GameCube, Wii, and Wii U disc dumping with OmniDrive firmware
 - DVD CSS key extraction and title-key recovery
-- Xbox and Xbox 360 DVD dumping with compatible Kreon firmware
+- Xbox and Xbox 360 DVD dumping with compatible Kreon or OmniDrive firmware
 - Drive capability testing and selected firmware flashing tools
 
 ## Quick start
@@ -101,7 +101,7 @@ redumper --list-recommended-drives
 redumper --list-all-drives
 ```
 
-Generic MMC drives can be used experimentally, but firmware limitations may prevent a complete or byte-perfect CD dump. DVD, HD DVD, and Blu-ray dumping generally does not require a specific model. Xbox and Xbox 360 DVD media are the exception and require a compatible drive with Kreon firmware.
+Generic MMC drives can be used experimentally, but firmware limitations may prevent a complete or byte-perfect CD dump. DVD, HD DVD, and Blu-ray dumping generally does not require a specific model. Xbox and Xbox 360 DVD media are the exception and require a compatible drive with Kreon or OmniDrive firmware.
 
 Compatible drives running [OmniDrive](https://github.com/RibShark/OmniDrive) firmware can use redumper's raw DVD and Blu-ray acquisition paths. Enable them explicitly with `--dvd-raw` or `--bd-raw`:
 
@@ -110,7 +110,7 @@ redumper disc --drive=<drive> --dvd-raw
 redumper disc --drive=<drive> --bd-raw
 ```
 
-OmniDrive also enables redumper to dump Nintendo GameCube, Wii, and Wii U discs. redumper detects these Nintendo formats and automatically uses the appropriate raw acquisition and descrambling path; no additional raw-mode option is required.
+OmniDrive also enables redumper to dump Xbox, Xbox 360, Nintendo GameCube, Wii, and Wii U discs. redumper detects these proprietary formats and automatically uses the appropriate raw acquisition path; Nintendo discs are also descrambled as part of the dump. No additional raw-mode option is required.
 
 ### Test an unknown drive
 
