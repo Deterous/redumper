@@ -43,6 +43,7 @@ import scsi.cmd;
 import scsi.mmc;
 import scsi.sptd;
 import skeleton;
+import utils.endian;
 import utils.file_io;
 import utils.logger;
 import utils.misc;
@@ -439,7 +440,6 @@ export int redumper(Options &options)
             endian_swap_to_array(vvv, omnidrive_minimum_version());
             ctx.drive_config.reserved5 = std::string("OmniDrive") + std::string(vvv, sizeof(vvv));
         }
-
 
         std::optional<GET_CONFIGURATION_FeatureCode_ProfileList> current_profile;
         if(aggregate.drive_ready)
