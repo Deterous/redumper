@@ -540,8 +540,7 @@ DumpConfig dump_get_config(DiscType disc_type, bool raw)
 }
 
 
-SPTD::Status read_dvd_sectors(SPTD &sptd, uint8_t *sectors, uint32_t sector_size, int32_t lba, uint32_t &sectors_count, bool force_unit_access, DiscType disc_type, bool raw,
-    bool &truncation_warned)
+SPTD::Status read_dvd_sectors(SPTD &sptd, uint8_t *sectors, uint32_t sector_size, int32_t lba, uint32_t &sectors_count, bool force_unit_access, DiscType disc_type, bool raw, bool &truncation_warned)
 {
     SPTD::Status status;
 
